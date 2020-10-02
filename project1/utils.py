@@ -88,7 +88,8 @@ def truncate_to_poly(X, pn):
     p = int((pn+1)*(pn+2)/2)
     return np.copy(X[:,:p])
 
-def prep(X_train, X_test, **kwargs):
+def scale(X_train, X_test, **kwargs):
+    '''Wrapper for skl.preprocessing.StandardScaler. **kwargs are forwarded to StandardScaler'''
     scaler = skl.preprocessing.StandardScaler(**kwargs)
     scaler.fit(X_train)
     X_train = scaler.transform(X_train)
