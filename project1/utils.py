@@ -21,11 +21,11 @@ def FrankeFunction(x,y):
     return term1 + term2 + term3 + term4
 
 # Generate samples from the FrankeFunction with some optional noise
-def franke_sampler(x, y, noise=.1):
+def franke_sampler(x, y, var_eps=.01):
     f = FrankeFunction(x, y).reshape(len(x), 1)
-    var_eps = noise * np.var(f)
-    z = f + np.sqrt(var_eps)*np.random.randn(len(x), 1)
-    return (z, f, var_eps)
+    eps = np.sqrt(var_eps)*np.random.randn(len(x), 1)
+    z = f + eps
+    return (z, f, eps)
 
 # Generate samples from the FrankeFunction with some optional noise
 def image_sampler(x, y, img):
@@ -83,6 +83,24 @@ def var(y):
 def best_r2(mse_array, y):
     return 1 - np.min(mse_array)/np.mean(sum((y - np.mean(y))**2)/len(y))
 
+def beta_hat_confidence_intervals(X, y, var_eps, ci=95):
+    '''Returns an ndarray((3, p)) of confidence intervals for the estimators of y on X'''
+    std_err_multipliers = {90:1.645, 95:1.96, 98:2.326, 99:2.576}
+    std_err_multiplier = std_err_multipliers[ci]
+    n, p = X.shape
+    intervals = np.ndarray((p, 3))
+
+    XtX_inv = np.linalg.inv(X.T @ X)
+    beta_hat = XtX_inv @ X.T @ y
+    y_tilde = X @ beta_hat
+    var_beta_hat = var_eps*np.sqrt(np.diag(XtX_inv)).reshape(p,1)
+    intervals[:,0] = (beta_hat - std_err_multiplier*np.sqrt(var_beta_hat)).ravel()
+    intervals[:,1] = beta_hat.ravel()
+    intervals[:,2] = (beta_hat + std_err_multiplier*np.sqrt(var_beta_hat)).ravel()
+
+    return intervals.T
+
+
 # Preprocessing X
 def truncate_to_poly(X, pn):
     p = int((pn+1)*(pn+2)/2)
@@ -127,3 +145,13 @@ def split(y, k):
     test_splits = [list(range(i, i+s)) for i in range(0, last_idx, s)]
     train_splits = [list(set(range(last_idx)) - set(test_split)) for test_split in test_splits]
     return (train_splits, test_splits)
+
+
+def find_best_lambdas(df=DataFrame(), polynomial_orders=[], col_prefix=str()):
+    '''Searches df for the lambda which gives the best MSE for each polynomial in polynomial_orders and returns the MSEs in an ndarray'''
+    best_mse = np.ndarray(len(polynomial_orders))
+    row_best_lambda = df.filter(regex=col_prefix).idxmin()
+    for i, row in enumerate(row_best_lambda):
+        pn = polynomial_orders[i]
+        best_mse[i] = df.at[row, col_prefix + str(pn)]
+    return best_mse
