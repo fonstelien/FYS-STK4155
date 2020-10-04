@@ -2,8 +2,11 @@
 
 from utils import *
 
-def run_ridge_bootstrap(X, z, f=None, polynomial_orders=[], lambdas=[], train_size=.5, bootstraps=20):
+def run_ridge_bootstrap(X, z, f=None, polynomial_orders=[], lambdas=[], train_size=.7, bootstraps=20):
     '''Runs Ridge regression with Bootstrap resampling on X, z, f on every polynomial up to polynomial_orders and for every lambda in lambdas. Returns DataFrame with columns=["lambda", "train_mse", "test_mse", "test_bias", "test_var"]'''
+
+    if f is None:
+        f = z
 
     ridge_bs_df = DataFrame()
     ridge_bs_df["lambda"] = lambdas
@@ -17,12 +20,7 @@ def run_ridge_bootstrap(X, z, f=None, polynomial_orders=[], lambdas=[], train_si
 
     for pn in polynomial_orders:
         Xpn = truncate_to_poly(X, pn)
-        if f is None:
-            X_train, X_test, z_train, z_test = skl.model_selection.train_test_split(Xpn, z, train_size=train_size)
-            f_test = z_test
-        else:
-            X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(Xpn, z, f, train_size=train_size)
-
+        X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(Xpn, z, f, train_size=train_size)
         X_train, X_test = scale(X_train, X_test)
 
         z_test_tilde = np.ndarray((X_test.shape[0], bootstraps))

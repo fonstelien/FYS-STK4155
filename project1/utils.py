@@ -147,11 +147,12 @@ def split(y, k):
     return (train_splits, test_splits)
 
 
-def find_best_lambdas(df=DataFrame(), polynomial_orders=[], col_prefix=str()):
-    '''Searches df for the lambda which gives the best MSE for each polynomial in polynomial_orders and returns the MSEs in an ndarray'''
+def best_lambda_mse(df=DataFrame(), polynomial_orders=[], col_prefix=str()):
+    '''Searches df for the lambda which gives the best MSE for each polynomial in polynomial_orders and returns the lambdas and MSEs in as (lambdas, best_mse)'''
     best_mse = np.ndarray(len(polynomial_orders))
     row_best_lambda = df.filter(regex=col_prefix).idxmin()
+    lambdas = df['lambda'][row_best_lambda].to_numpy()
     for i, row in enumerate(row_best_lambda):
         pn = polynomial_orders[i]
         best_mse[i] = df.at[row, col_prefix + str(pn)]
-    return best_mse
+    return lambdas, best_mse
