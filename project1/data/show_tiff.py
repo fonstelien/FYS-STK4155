@@ -8,11 +8,11 @@ import sys
 file_name = sys.argv[1]
 
 # Load the terrain
-terrain1 = imread(file_name)
+terrain = imread(file_name)
 # Show the terrain
 plt.figure()
 plt.title(file_name)
-plt.imshow(terrain1, cmap='gray')
+plt.imshow(terrain, cmap='gray')
 plt.xlabel('X')
 plt.ylabel('Y')
 plt.show()

@@ -11,59 +11,78 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn as skl
 from sklearn import *
+import imageio
+from numba import njit, prange
 
-# From the assignment; The function that we are goint to approximate
+
+# From the assignment:
 def FrankeFunction(x,y):
+    '''Evaluates the Franke function at x,y'''
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     return term1 + term2 + term3 + term4
 
-# Generate samples from the FrankeFunction with some optional noise
+
 def franke_sampler(x, y, var_eps=.01):
+    '''Generate samples from the FrankeFunction with some optional noise. Returns tuple=(z, f, eps)'''
     f = FrankeFunction(x, y).reshape(len(x), 1)
     eps = np.sqrt(var_eps)*np.random.randn(len(x), 1)
     z = f + eps
     return (z, f, eps)
 
-# Generate samples from the FrankeFunction with some optional noise
-def image_sampler(x, y, img):
-    import imageio
-    terrain = imageio.imread(img)
-    return terrain[x,y]
 
-# Create a mesh with sn uniform randomly scattered points in the rectangle (x_start, y_start), (x_end, y_end). Returned ndarrays have shape (sn, 1)
+def image_sampler(file_name, sn, random_state=0):
+    '''Draws sn normally distributed samples from file_name GEOTIF image and returns a tuple=(x, y, z, (x_dim, y_dim, z_norm)), where x, y z, are normalized with x_dim, y_dim, z_norm'''
+    img = imageio.imread(file_name)
+
+    x_dim, y_dim = img.shape
+    z_norm = img.max()
+
+    np.random.seed(random_state)
+    x = np.random.randint(0, x_dim, (sn, 1))
+    y = np.random.randint(0, y_dim, (sn, 1))
+    z = img[x, y]
+
+    return (x/x_dim, y/y_dim, z/z_norm, (x_dim, y_dim, z_norm))
+
+
 def randmesh(sn=500, x_start=0., y_start=0., x_end=1., y_end=1., random_state=0):
+    '''Create a mesh with sn uniform randomly scattered points in the rectangle (x_start, y_start), (x_end, y_end). Returned ndarrays have shape (sn, 1)'''
     np.random.seed(random_state)
     x = np.random.uniform(x_start, x_end, (sn, 1))
     y = np.random.uniform(y_start, y_end, (sn, 1))
     return (x, y)
 
-# Create a mesh with sn uniform randomly scattered points in the rectangle (x_start, y_start), (x_end, y_end). Returned ndarrays have shape (sn, 1)
-def randmesh_int(x_end, y_end, sn=500, x_start=0, y_start=0, random_state=0):
+
+def randmesh_int(x_end, y_end, x_start=0, y_start=0, sn=500, random_state=0):
+    '''Create a mesh with sn uniform randomly scattered points in the rectangle (x_start, y_start), (x_end, y_end). Returned ndarrays have shape (sn, 1)'''
     np.random.seed(random_state)
     x = np.random.randint(x_start, x_end, (sn, 1))
     y = np.random.randint(y_start, y_end, (sn, 1))
     return (x, y)
 
-# Make design matrix with polinomial degree np in two variables
+
 def make_design_matrix(x, y, pn=5):
+    '''Make design matrix with polinomial degree pn in two variables. Rows are on the form Pn(x,y) = [1,x,y,x^2,xy,y^2,x^3,x^2y,...]'''
     X = np.ndarray([len(x), int((pn+1)*(pn+2)/2)])
 
-    ex = [0]*int((pn+1)*(pn+2)/2)
-    ey = [0]*int((pn+1)*(pn+2)/2)
-    kx = ky = 0
+    n_terms = int((pn+1)*(pn+2)/2)
+    x_exponents = [0]*n_terms
+    y_exponents = [0]*n_terms
+
+    xn = yn = 0
     for i in range(pn+1):
         for j in range(i+1):
-            ex[kx] = j
-            kx += 1
+            x_exponents[xn] = j
+            xn += 1
         for j in range(i,-1,-1):
-            ey[ky] = j
-            ky += 1
+            y_exponents[yn] = j
+            yn += 1
 
     for i, (xi, yi) in enumerate(zip(x, y)):
-        X[i,:] = [(xi**px)*(yi**py) for px, py in zip(ex, ey)]
+        X[i,:] = [(x[i]**xn)*(y[i]**yn) for xn, yn in zip(x_exponents, y_exponents)]
 
     return X
 
@@ -103,6 +122,7 @@ def beta_hat_confidence_intervals(X, y, var_eps, ci=95):
 
 # Preprocessing X
 def truncate_to_poly(X, pn):
+    '''Truncates the design matrix X to right shape for polynomial degree pn'''
     p = int((pn+1)*(pn+2)/2)
     return np.copy(X[:,:p])
 
@@ -115,26 +135,6 @@ def scale(X_train, X_test, **kwargs):
     X_train[:,0] = 1
     X_test[:,0] = 1
     return (X_train, X_test)
-
-
-def center(X):
-    X = np.copy(X)
-    if X.shape[1] == 1:
-        return X
-    X -= np.mean(X, axis=0, keepdims=True)
-    X[:,0] = 1
-    return X
-
-def center_scale(X):
-    X = np.copy(X)
-    if X.shape[1] == 1:
-        return X
-    means = np.mean(X, axis=0, keepdims=True)
-    stds = np.std(X, axis=0, keepdims=True)
-    stds[0,0] = 1
-    X = (X - means) / stds
-    X[:,0] = 1
-    return X
 
 
 def split(y, k):
@@ -156,3 +156,42 @@ def best_lambda_mse(df=DataFrame(), polynomial_orders=[], col_prefix=str()):
         pn = polynomial_orders[i]
         best_mse[i] = df.at[row, col_prefix + str(pn)]
     return lambdas, best_mse
+
+
+@njit(parallel=True)
+def run_image_calcs(img, pn, betas):
+    '''numba-parallelized part of generate_image()'''
+    n_terms = int((pn+1)*(pn+2)/2)
+    x_exponents = [0]*n_terms
+    y_exponents = [0]*n_terms
+
+    xn = yn = 0
+    for i in range(pn+1):
+        for j in range(i+1):
+            x_exponents[xn] = j
+            xn += 1
+        for j in range(i,-1,-1):
+            y_exponents[yn] = j
+            yn += 1
+
+    x_dim, y_dim = img.shape
+    xi = np.linspace(0,1,x_dim)
+    yj = np.linspace(0,1,y_dim)
+    img[:,:] = 0
+
+    for i in prange(x_dim):
+        for j in range(y_dim):
+            for k in range(n_terms):
+                b = betas[k,0]
+                xn = x_exponents[k]
+                yn = y_exponents[k]
+                img[i,j] += b*(xi[i]**xn)*(yj[j]**yn)
+
+def generate_image(pn, xyz_norm, betas):
+    '''Generates image with pn-th polynomial Pn(x,y) and coefficient vector betas'''
+    x_dim, y_dim, z_norm = xyz_norm
+    img = np.ndarray((x_dim, y_dim))
+    run_image_calcs(img, pn, beta_hat)
+    img = img * z_norm
+    img = img.astype(int)
+    return img
