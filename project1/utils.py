@@ -12,7 +12,7 @@ import seaborn as sns
 import sklearn as skl
 from sklearn import *
 import imageio
-from numba import njit, prange
+from numba import jit, njit, prange
 
 
 # From the assignment:
