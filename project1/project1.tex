@@ -67,10 +67,13 @@ Given a data set $\mathcal{L} = \{(y_i, \mathbf{x}_i), i=0,1,...,n-1\}$ where $\
 \label{y_f_eps}
 \mathbf{y} = \mathbf{f}(\mathbf{X}) + \mathbf{\epsilon} \quad \text{, where} \quad \mathbf{f}(\mathbf{X}) = \mathbf{X} \mathbf{\beta} \quad \text{and} \quad \mathbf{\epsilon} \sim \mathcal{N}(0, \sigma^2).
 \end{equation}
+
+\subsection{Cost Functions and Bias-Variance Trade-off}
 In linear regression we aim find the best approximation $\mathbf{\tilde{y}} = \mathbf{X\hat{\beta}}$ to $\mathbf{f}$ by minimizing a cost function $C(\mathbf{X},\mathbb{\beta})$, which reflects the expected test error of the approximation \cite{james2013introduction}.
 
 For OLS, the cost function is simply given by the mean squared error (MSE) of the approximation
 \begin{equation}
+\label{cost-ols}
 	C_{OLS}(\mathbf{X},\mathbb{\beta}) = \frac{1}{n} \sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2.
 \end{equation}
 Now, given Equation (\ref{y_f_eps}), we split the cost function into
@@ -85,7 +88,7 @@ and since $\mathbb{E}(\mathbf{f}) = \mathbb{E}(\mathbf{\tilde{y}})$ we get OLS's
 \label{red-irred}
 	C_{OLS}(\mathbf{X},\mathbb{\beta}) = \mathbb{E}[(\mathbf{f} - \mathbf{\tilde{y}})^2] + \sigma^2.
 \end{equation}
-The first term is the MSE of our approximation $\mathbf{\tilde{y}}$ to $\mathbf{f}$, which we aim to minimize. The second term is dependent on the data quality (instrument precision, round-off error, etc.) and is irreducible, or rather; reduction of the cost function beyond $\sigma^2$ leads to overfitting of the model.
+The first term is the MSE of our approximation $\mathbf{\tilde{y}}$ to $\mathbf{f}$, which we aim to minimize. The second term is dependent on the data quality (instrument precision, round-off error, etc.) and is irreducible, or rather; reduction of the cost function beyond $\sigma^2$ leads to overfitting of the model. As a consequence, the quantity that we aim to determine in linear regression is the limit for the fit of our model, which is the irreducible error $\sigma^2$.
 
 The first term in equation (\ref{red-irred}) can be reduced into model \textit{bias} and model \textit{variance}, as outlined in \cite{friedman2001elements}. An approximation $\mathbf{\tilde{y}} = \mathbf{X\hat{\beta}}$ to $\mathbf{f}$ with too low complexity, say $\mathbf{\hat{\beta}} \in \mathbb{R}^2$, will have low variability in its response to different training sets, but the error will be heavily dependent on the choice of model, which is the bias. A too complex approximation, on the other hand, will have high variability in its test response, but generally be less biased. The first term in equation (\ref{red-irred}) can be reduced further to reflect this:
 \begin{equation}
@@ -102,14 +105,13 @@ C_{OLS}(\mathbf{X},\mathbb{\beta}) &= \mathbb{E}[(\mathbf{f} - \mathbb{E}(\mathb
 &=\frac{1}{n}\sum_i(f_i-\mathbb{E}\left[\boldsymbol{\tilde{y}}\right])^2+\frac{1}{n}\sum_i(\tilde{y}_i-\mathbb{E}\left[\boldsymbol{\tilde{y}}\right])^2+\sigma^2,
 \end{aligned}
 \end{equation}
-
 and hence, to obtain the best possible expected test error we must trade bias off against variance.
 
 For OLS, a better fit may be obtained by increasing model complexity to reduce the bias, up to the point where variance starts to influence the model negatively. To allow increasing complexity further, a larger training data set must be used. Ridge and LASSO, however, allows us to further increase model complexity without increasing the training data, by putting an \textit{extra} cost on variance. Since 
 \begin{equation}
 	\mathrm{Var}(\mathbf{\tilde{y}}) = \mathbb{E}[[\mathbf{X \hat{\beta}} - \mathbb{E}(\mathbf{X \hat{\beta}})]^2] \sim \mathrm{Var}(\mathbf{\hat{\beta}}),
 \end{equation}
-reducing $\mathrm{Var}(\mathbf{\hat{\beta}})$ reduces $\mathrm{Var}(\mathbf{\tilde{y}})$. Ridge does this by putting a cost $\sum \lambda \beta_j^2$ on the coefficient values, shrinking larger coefficients more than smaller coefficients, while LASSO puts a cost $\sum \lambda |\beta_j|$ on the values which will try to drive them all the way to zero. See equations (\ref{cost-ridge}) and (\ref{cost-lasso}). Figure \ref{fig:ols-ridge-lasso-comp} below shows a comparison for the simple case $\tilde{y} = \hat{\beta}_0 + \hat{\beta}_1x$.
+reducing $\mathrm{Var}(\mathbf{\hat{\beta}})$ reduces $\mathrm{Var}(\mathbf{\tilde{y}})$. Ridge does this by putting a cost $\sum \lambda \beta_j^2$ on the coefficient values, shrinking larger coefficients more than smaller coefficients, while LASSO puts a cost $\sum \lambda |\beta_j|$ on the values which will try to drive them all the way to zero. See equations (\ref{cost-ridge}) and (\ref{cost-lasso}). Figure \ref{fig:ols-ridge-lasso-comp} below shows a comparison for the simple case $\mathbf{\tilde{y}} = \mathbf{I\hat{\beta}}$.
 \begin{equation}
 \label{cost-ridge}
 C_{Ridge}(\mathbf{X},\mathbb{\beta}) = \mathbb{E}[(\mathbf{y} - \mathbf{\tilde{y}})^2] + \sum_{i=1}^{n} \lambda \beta_j^2
@@ -122,38 +124,81 @@ C_{LASSO}(\mathbf{X},\mathbb{\beta}) = \mathbb{E}[(\mathbf{y} - \mathbf{\tilde{y
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[width=.5\linewidth]{./results/ols-ridge-lasso-comp.png}
-	\caption{The effect of shrinking the coefficient estimates in Ridge and LASSO regression methods compared to OLS for the simple approximation $\tilde{y} = \hat{\beta}_0 + \hat{\beta}_1x$. We see that Ridge will try to dampen $\hat{\beta}_1$ to reduce $\tilde{y}$'s variance, while LASSO drives $\hat{\beta}_1$ to zero when it becomes sufficiently small.}
+	\caption{The effect of shrinking the coefficient estimates in Ridge and LASSO regression methods compared to OLS for the simple approximation $\mathbf{\tilde{y}} = \mathbf{I\hat{\beta}}$. We see that Ridge will try to dampen $\hat{\beta}_1$ to reduce $\tilde{y}$'s variance, while LASSO drives $\hat{\beta}_1$ to zero when it becomes sufficiently small.}
 	\label{fig:ols-ridge-lasso-comp}
 \end{figure}
 
-
-\subsection{OLS Regression}
-The linear regression model $\mathbf{y} = \mathbf{X\beta} + \mathbf{\epsilon}$ has the closed form solution for the optimum coefficient estimates \cite{van2015lecture}
+\subsection{The Design Matrix}
+We want to approximate the Franke function, given by
 \begin{equation}
-\label{osl-reg}
-	\mathbf{\hat{\beta}} = (\mathbf{X}^\intercal \mathbf{X})^{-1} \mathbf{X}^\intercal \mathbf{y},
-\end{equation}
-which gives us the approximation $\mathbf{\tilde{y}} = \mathbf{X\hat{\beta}}$ to $\mathbf{f}$. We want to approximate the Franke function, given by
-\begin{equation}
+\label{franke}
 \begin{aligned}
 f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}+\frac{3}{4}\exp{\left(-\frac{(9x+1)^2}{49}- \frac{(9y+1)}{10}\right)} \\
 &+\frac{1}{2}\exp{\left(-\frac{(9x-7)^2}{4} - \frac{(9y-3)^2}{4}\right)} -\frac{1}{5}\exp{\left(-(9x-4)^2 - (9y-7)^2\right) }.
 \end{aligned}
 \end{equation}
-An $n$th degree polynomial in two variables $p_n(x,y) = 1 + x + y + x^2 + xy + y^2 ...$ can be used to approximate any function in two variables, such as the Franke function. We begin by collecting $m$ samples of the function $\mathcal{L}_{Franke} = \{(f(x_i, y_i), (x_i, y_i), i=0,1,...,m-1\}$. Then we set up our \textit{design matrix} $\mathbf{X}$ by evaluating each of the terms in $p_n(x_i,y_i)$ and installing them in row $i$ of $\mathbf{X}$:
+A $p$th degree polynomial in two variables $p_p(x,y) = 1 + x + y + x^2 + xy + y^2 ...$ can be used to approximate any function in two variables, such as the Franke function. We begin by collecting $n$ samples of the function $\mathcal{L}_{Franke} = \{(f(x_i, y_i), (x_i, y_i), i=0,1,...,n-1\}$. Then we set up our \textit{design matrix} $\mathbf{X} \in \mathbb{R}^{n \times (p+1)}$ by evaluating each of the $p+1$ terms in $p_p(x_i,y_i)$ and installing them in row $i$ of $\mathbf{X}$:
 \begin{equation}
-\mathbf{x}_i = [1 \quad x_i \quad y_i \quad x_i^2 \quad xy \quad y_i^2 \quad \cdots],
+\mathbf{x}_i = [1 \quad x_i \quad y_i \quad x_i^2 \quad xy \quad y_i^2 \quad \cdots].
 \end{equation}
-and install this in equation (\ref{osl-reg}) to get the best MSE fit to the $m$ samples in $\mathcal{L}_{Franke}$. 
+The next step is then to solve $\mathbf{y} = \mathbf{X\beta} + \mathbf{\epsilon}$ to obtain the optimum coefficient estimates $\mathbf{\hat{\beta}}$ with the constraints given by the linear regression method's cost function.
+
+\subsection{OLS Regression Method}
+The ordinary least square's cost function $C_{OLS}(\mathbf{X},\mathbb{\beta})$ has a closed form solution for obtaining the optimum coefficient estimates given by
+\begin{equation}
+\label{osl-reg}
+	\mathbf{\hat{\beta}} = (\mathbf{X}^\intercal \mathbf{X})^{-1} \mathbf{X}^\intercal \mathbf{y}.
+\end{equation}
+See \cite{van2015lecture} for a thorough outline. Let us first try this out on some randomly drawn samples from the Franke function (\ref{franke}), where we have added some normally distributed noise, $\epsilon$. We see in Figure \ref{fig:ols-simple-varying-n} that the variance in the approximation improves dramatically with increasing number of samples. This is explained by the decreased variance in the coefficient estimates, and we can illustrate this by plotting the confidence interval for each coefficient. As seen in Figure \ref{fig:ols-ci95}, for higher number of samples, the 95 \% confidence interval shrinks, meaning that the range around the estimated coefficient $\hat\beta_j$ in which the true unknown coefficients $\beta_j$ lays is narrowed \cite{james2013introduction}. The confidence interval is calculated by
+\begin{equation}
+\label{ci}
+	\mathrm{CI_{95}^{(j)}}: \hat{\beta}_j \pm \mathrm{Var}(\hat{\beta}_j) \quad \text{where} \quad \mathrm{Var}(\hat{\beta}_j) = \sigma^2\sqrt{[(\mathbf{X}^\intercal \mathbf{X})^{-1}]_{jj}}.
+\end{equation}
+In the last term, due to \cite{fys-stk4155-notes}, $\sigma^2 = \mathrm{Var}(\epsilon)$, which is known and set to 0.05 in this example.
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/ols-simple-varying-n.png}
+	\caption{Some approximations to the Franke function (\ref{franke}) with added noise $\epsilon  \sim \mathcal{N}(0, 0.05)$ for 100, 250, 500 and 1000 samples. Train-test split is 70/30 in all cases. Each curve represents a recalculation the estimated coefficients $\mathbf{\hat{\beta}}$ for a new randomly drawn data set. We see that the variance in the approximation decreases with increasing number of samples. The dotted blue line is the average.}
+	\label{fig:ols-simple-varying-n}
+\end{figure}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=1\linewidth]{./results/ols-ci95.png}
+\caption{95 \% confidence interval ($\mathrm{CI_{95}}$) for the coefficient estimators $\hat{\beta}_j$ of $p_5(x,y)$ approximating the Franke function (\ref{franke}) with 100, 250, 500 and 1000 randomly drawn samples. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.05)$ and the intervals are calculated using equation (\ref{ci}). We see that $\mathrm{CI_{95}^{(j)}}$ narrows for increasing number of samples, which is reflected in decreased $\mathrm{Var}(\tilde{y}_j)$. (See Figure \ref{fig:ols-simple-varying-n}).}
+\label{fig:ols-ci95}
+\end{figure}
+
+Figure \ref{fig:ols-simple-varying-n} above illustrates the importance of re-sampling in linear regression model evaluation. Especially for the 100 and 250 samples, it is difficult to draw any conclusion about the suitability of the model, but if we look at the average (dotted blue line), we get a result which is easier to interpret. From the 100-sample results, we should expect best performance for a first-order polynomial $p_1(x,y)$ \textit{on average}, while for the 250-sample results, $p_3(x,y)$ seems to be best. For 500 and 1000, the results suggest that we could try to increase the model complexity beyond $p_5(x,y)$. Two more methodical ways re-sampling are Bootstrap and cross validation.
+
+In Bootstrap re-sampling we split the data into a training and a test set, usually keeping 2/3 to 4/5 of the samples for training \cite{assignment}. Then, assuming the training set has $m$ samples, we collect from it the same number $m$ samples \textit{with} replacement, and calculate from those our coefficient estimates. Then we evaluate the model fit using the test data, note the result, and repeat the process for a number of times depending on the data set.
+
+In $k$-fold cross-validation we also split the data into a training and a test set, but they are not fixed as for Bootstrap. Instead, we split the data into $k$ equally sized parts, keep one of the $k$ parts for test and train our model on the rest. Then we evaluate the model fit, note the result, and re-sample by picking the next of the $k$ parts, and handing the already tested part back to the training set. The process is repeated $k$ times (5-10) \cite{assignment} so that all of the data has been tested once.
+
+In Figures \ref{fig:ols-bootstrap} and \ref{fig:ols-cv} we see again the error estimates for the Franke function, but this time estimated with Bootstrap and cross validation re-sampling, respectively. Note that the scaling is different, so that even if the shape of the curves are similar, the actual error presented by Bootstrap in the overfitting region is at least a factor 10-100 larger than for cross validation. However, for the best fit, they both largely predict the same error on the 500- and 1000-sample sets, while on the 100- and 250-sample sets there is a marked overestimation by Bootstrap.
+
+Figure \ref{fig:ols-bootstrap} also presents the estimated bias-variance trade-off. We see that as expected, variance increases with model complexity, while bias decreases up to a point where high model complexity itself creates bias.
 
 
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/ols-bootstrap.png}
+	\caption{Estimated error for the OLS polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and Bootstrap re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. The estimates are calculated with a train-test split of 70/30 and with 25 bootstraps. We see that for the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ well, while for the 100- and 250-sample sets it overestimates it. Cross validation performs a little better in this area. See Figure \ref{fig:ols-cv}.}
+	\label{fig:ols-bootstrap}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/ols-cv.png}
+	\caption{Estimated error for the OLS polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and $k$-fold cross validation re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. The estimates are calculated with a $k$s 5, 10 and 20. We see that the choice of $k$ does not influence the estimates except for in the overfitted area. For the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ well, while for the 100- and 250-sample sets it overestimates it, if however lesser than that of Bootstrap. See Figure \ref{fig:ols-bootstrap}.}
+	\label{fig:ols-cv}
+\end{figure}
+
+\subsection{Ridge Regression Method}
 
 
-
-\subsection{Ridge Regression}
-
-
-\subsection{LASSO Regression}
+\subsection{LASSO Regression Method}
 
 
 \section{Results}

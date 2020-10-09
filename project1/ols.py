@@ -11,17 +11,18 @@ def run_ols_bootstrap(X, z, f=None, polynomial_orders=[], train_size=.7, bootstr
     ols_bs_df = DataFrame(columns=["pol_order", "train_mse", "test_mse", "test_bias", "test_var"])
     mse_train = np.ndarray(bootstraps)
 
+    X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(X, z, f, train_size=train_size, random_state=0)
+    X_train, X_test = scale(X_train, X_test, with_std=False)
     for pn in polynomial_orders:
-        Xpn = truncate_to_poly(X, pn)
-        X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(Xpn, z, f, train_size=train_size)
-        X_train, X_test = scale(X_train, X_test, with_std=False)
+        X_train_pn = truncate_to_poly(X_train, pn)
+        X_test_pn = truncate_to_poly(X_test, pn)
 
         z_test_tilde = np.ndarray((len(z_test), bootstraps))
         for bs in range(bootstraps):
-            X_resampled, z_resampled = skl.utils.resample(X_train, z_train, random_state=bs)
+            X_resampled, z_resampled = skl.utils.resample(X_train_pn, z_train, random_state=bs)
             beta_hat = np.linalg.pinv(X_resampled) @ z_resampled
             mse_train = mse(z_resampled, X_resampled @ beta_hat)
-            z_test_tilde[:, bs] = (X_test @ beta_hat).ravel()
+            z_test_tilde[:, bs] = (X_test_pn @ beta_hat).ravel()
 
         mse_train = np.mean(mse_train)
         mse_test = mse(z_test, z_test_tilde)
