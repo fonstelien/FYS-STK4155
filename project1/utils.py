@@ -86,6 +86,7 @@ def make_design_matrix(x, y, pn=5):
 
     return X
 
+
 # Defining some useful functions
 def mse(y, y_tilde):
     return np.mean(np.mean((y - y_tilde)**2, axis=1, keepdims=True))
