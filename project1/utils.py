@@ -192,7 +192,7 @@ def generate_image(pn, xyz_norm, betas):
     '''Generates image with pn-th polynomial Pn(x,y) and coefficient vector betas'''
     x_dim, y_dim, z_norm = xyz_norm
     img = np.ndarray((x_dim, y_dim))
-    run_image_calcs(img, pn, beta_hat)
+    run_image_calcs(img, pn, betas)
     img = img * z_norm
     img = img.astype(int)
     return img

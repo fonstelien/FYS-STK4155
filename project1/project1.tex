@@ -46,18 +46,16 @@
 
 \end{abstract}
 
-\section{Introduction}
+\section{Introduction} \label{intro}
 %When you write the introduction you could focus on the following aspects
 % - Motivate the reader, the first part of the introduction gives always a motivation and tries to give the overarching ideas
 % - What I have done
 % - The structure of the report, how it is organized etc
-OLS, Ridge and LASSO are three popular methods for linear regression. They are related to each other in that Ridge and LASSO (least absolute shrinkage and selection operator) are refinements of OLS (ordinary least squares) in that they aim to \textit{shrink} the coefficient estimates $\mathbf{\hat{\beta}} \in \mathbb{R}^p$ towards zero by penalizing their value and hence reducing their variance \cite{james2013introduction}.
+OLS, Ridge and LASSO are three popular methods for linear regression. They are related to each other in that Ridge and LASSO (least absolute shrinkage and selection operator) are refinements of OLS (ordinary least squares). They aim to \textit{shrink} the coefficient estimates $\mathbf{\hat{\beta}} \in \mathbb{R}^p$ towards zero by penalizing their value and hence reducing their variance \cite{james2013introduction}.
 
-In this report we will study each of these methods and how they perform when they are applied on $n$th degree polynomial fit with two variables. First we will do a controlled, qualitative study where we will fit each of them to \textit{Franke}'s function, and look at how they perform when varying the number of samples, the number of features and the method of resampling. Then we will move on to an evaluation of their suitability when approximating a highly irregular data set of unknown quality. For this we will use altitude levels of a mountain range. 
+In this report we will study each of these methods and how they perform when they are applied on $n$th degree polynomial fit with two variables. First, in Chapter \ref{methods} we will do a controlled, qualitative study where we will fit each of them to \textit{Franke}'s function, and look at how they perform when varying the number of samples, the number of features and the method of resampling. Then, in Chapter \ref{results}, we will move on to an evaluation of their suitability when approximating a highly irregular data set of unknown quality. For this we will use altitude levels of a mountain range. I conclude my evaluation by discussing the report's findings in Chapter \ref{conclusion}.
 
-% ADD MORE ABOUT RESULTS AND CONCLUSIONS
-
-\section{Methods}
+\section{Methods} \label{methods}
 % - Describe the methods and algorithms
 % - You need to explain how you implemented the methods and also say something about the structure of your algorithm and present some parts of your code
 % - You should plug in some calculations to demonstrate your code, such as selected runs used to validate and verify your results. The latter is extremely important!! A reader needs to understand that your code reproduces selected benchmarks and reproduces previous results, either numerical and/or well-known closed form expressions.
@@ -247,7 +245,7 @@ Figures \ref{fig:lasso-bootstrap} and \ref{fig:lasso-cv} show plots of searches 
 	\label{fig:lasso-cv}
 \end{figure}
 
-\section{Results}
+\section{Results} \label{results}
 % - Present your results
 % - Give a critical discussion of your work and place it in the correct context.
 % - Relate your work to other calculations/studies
@@ -268,16 +266,55 @@ Figure \ref{fig:ols-ridge-lasso-betas} shows the coefficient estimates $\hat{\be
 \end{figure}
 
 \subsection{Geological Data: Comparison of the OLS, Ridge and LASSO Regression Methods}
+We will now investigate the performance of each of the regression methods on a highly irregular data set. The data set represents the altitude above sea level of a mountain range in the central United States, collected from \cite{geo-data}. See Figure \ref{fig:geo-data}, left part. The data has unknown quality; that is, the irreducible error level $\sigma^2$ is unknown. We will however assume that the error is normally distributed with zero mean, such that the data again can be represented as in equation (\ref{y_f_eps}), repeated here for convenience:
+\begin{equation*}
+\mathbf{y} = \mathbf{f}(\mathbf{X}) + \mathbf{\epsilon} \quad \text{, where} \quad \mathbf{f}(\mathbf{X}) = \mathbf{X} \mathbf{\beta} \quad \text{and} \quad \mathbf{\epsilon} \sim \mathcal{N}(0, \sigma^2).
+\end{equation*}
+
+The data set contains $3601 \times 3601 \approx 13$ million data points, which is prohibitively large. We therefore draw uniformly distributed random samples from the data set to form subset of $n$ samples which we do our study on, as for the Franke function. Figure \ref{fig:geo-ols-cv} shows that the noise level $\sigma^2$ probably lies a little bit above $3 \cdot 10^{-3}$, and that using a larger data set than 5000 samples does not bring any benefits with regards to model fit parameter $R^2$, so we will base our study on 5000 samples.
+
+Ridge regression on the 5000-sample data set give slightly worse fit, as we see in Figure \ref{fig:geo-ridge-cv}. The model $R^2$ is only 0.80, compared to 0.83 for simple OLS, and this on the 30th polynomial, as opposed to the 20th for OLS. We see that $\hat{\lambda}$ for the Ridge's $p_{30}(x,y)$ is very small at $3.7 \cdot 10^{-10}$, indicating that there is not much variance in the response for Ridge to trade off against model bias in this data set. Beyond this level, it might be numerical instability which causes the estimates to increase.
+
+Figure \ref{fig:geo-lasso-cv} shows the results for LASSO regression on the same data set. We see that the fit is markedly worse than both Ridge and OLS. $R^2$ fit is only 0.71 at the 30th polynomial, but as we see the trend suggests that it would be possible to achieve at least some improvement to the fit. As for Ridge, $\hat{\lambda}$ for the best polynomial $p_{30}(x,y)$ is small, but stabilizing at around $1.0 \cdot 10^{-7}$. Again as for Ridge, this suggests that the data set does not offer the opportunity to trade bias against variance.
+
+In Figure \ref{fig:geo-data}, we see how the three approximations reproduces the original data set. For OLS and, if to a lesser extent, also for Ridge, we clearly see the main features are preserved, but that all smaller details disappears. For LASSO, the reproduction rather poor with all original features completely blurred.
 
 
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/geo-ols-cv.png}
+	\caption{OLS polynomial fit to geological data with 2500, 5000 and 7500 randomly selected samples. Error approximation by 5-fold cross validation. We see that the noise level probably lies a little bit above $3 \cdot 10^{-3}$, and that collecting more than 5000 samples does not give better fit for the polynomial. Hence, we base our evaluation of the suitability of OLS, Ridge and LASSO on the data set with 5000 samples.}
+	\label{fig:geo-ols-cv}
+\end{figure}
 
-\section{Conclusion}
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/geo-ridge-cv.png}
+	\caption{Ridge polynomial fit to geological data with 5000 randomly selected samples. Error approximation by 5-fold cross validation. Noise level approximated to about $3 \cdot 10^{-3}$ using OLS (see Figure \ref{fig:geo-ols-cv}). The model fit $R^2 = 0.80$ is markedly poorer than OLS and Ridge. The small $\hat{\lambda}$ for $p_{30}(x,y)$ suggests that bias-variance trade-off does not pay off greatly in this case.}
+	\label{fig:geo-ridge-cv}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/geo-lasso-cv.png}
+	\caption{LASSO polynomial fit to geological data with 5000 randomly selected samples. Error approximation by 5-fold cross validation. Noise level approximated to about $3 \cdot 10^{-3}$ using OLS (see Figure \ref{fig:geo-ols-cv}). The model fit $R^2 = 0.71$ and very small $\hat{\lambda}$ for $p_{30}(x,y)$ suggests that bias-variance trade-off does not pay off greatly in this case. We see however that }
+	\label{fig:geo-lasso-cv}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/geo-data.png}
+	\caption{To the left we see the original geological data reflecting altitude above sea level of a mountain range. The three images to the right are reproductions generated by solving the optimum $p_{n}(x_i,y_i)$ for $i \in [0,3600]$ obtained for each regression method OLS, Ridge and LASSO, respectively. OSL and Ridge reproduce the main features of the original, while LASSO's reproduction is completely unrecognizable.}
+	\label{fig:geo-data}
+\end{figure}
+
+\section{Discussion and Conclusion} \label{conclusion}
 % - State your main findings and interpretations
 % - Try as far as possible to present perspectives for future work
 % - Try to discuss the pros and cons of the methods and possible improvements
+We have seen that 
 
-
-
+\clearpage
 \bibliographystyle{plain}
 \bibliography{project1.bib}
 \end{document}
