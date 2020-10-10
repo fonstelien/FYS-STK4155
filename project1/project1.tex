@@ -30,7 +30,8 @@
 	tabsize=2
 }
 
-\title{FYS-STK4155 - Project 1}
+
+\title{FYS-STK4155 H20 - Project 1:\\An assessment of OLS, Ridge and LASSO Regression on Aerially Distributed Data}
 \author{Olav Fønstelien}
 
 \begin{document}
@@ -44,6 +45,7 @@
 % - Main Results 
 % - The implications
 
+
 \end{abstract}
 
 \section{Introduction} \label{intro}
@@ -53,12 +55,13 @@
 % - The structure of the report, how it is organized etc
 OLS, Ridge and LASSO are three popular methods for linear regression. They are related to each other in that Ridge and LASSO (least absolute shrinkage and selection operator) are refinements of OLS (ordinary least squares). They aim to \textit{shrink} the coefficient estimates $\mathbf{\hat{\beta}} \in \mathbb{R}^p$ towards zero by penalizing their value and hence reducing their variance \cite{james2013introduction}.
 
-In this report we will study each of these methods and how they perform when they are applied on $n$th degree polynomial fit with two variables. First, in Chapter \ref{methods} we will do a controlled, qualitative study where we will fit each of them to \textit{Franke}'s function, and look at how they perform when varying the number of samples, the number of features and the method of resampling. Then, in Chapter \ref{results}, we will move on to an evaluation of their suitability when approximating a highly irregular data set of unknown quality. For this we will use altitude levels of a mountain range. I conclude my evaluation by discussing the report's findings in Chapter \ref{conclusion}.
+In this report we will study each of these methods and how they perform when they are applied on $n$th degree polynomial fit with two variables. First, in Chapter \ref{methods} we will do a controlled, qualitative study where we will fit each of them to \textit{Franke}'s function, and look at how they perform when varying the number of samples, the number of predictors and the method of resampling. Then, in Chapter \ref{results}, we will move on to an evaluation of their suitability when fitted to a highly irregular data set of unknown quality. For this we will use altitude levels of a mountain range. I conclude my evaluation by discussing the report's findings in Chapter \ref{conclusion}.
 
 \section{Methods} \label{methods}
 % - Describe the methods and algorithms
 % - You need to explain how you implemented the methods and also say something about the structure of your algorithm and present some parts of your code
 % - You should plug in some calculations to demonstrate your code, such as selected runs used to validate and verify your results. The latter is extremely important!! A reader needs to understand that your code reproduces selected benchmarks and reproduces previous results, either numerical and/or well-known closed form expressions.
+\subsection{Cost Functions and Bias-Variance Trade-Off}
 
 Given a data set $\mathcal{L} = \{(y_i, \mathbf{x}_i), i=0,1,...,n-1\}$ where $\mathbf{y} = \{y_i\}$ are the response variables and $\mathbf{X} = \{\mathbf{x}_i\}$ are the predictors. Let's assume that the predictor $\mathbf{X}$ in $\mathcal{L}$ only partially explains the response variable $\mathbf{y}$, and that there is some underlying function $\mathbf{f}(\mathbf{X})$ in $\mathbf{y}$, such that $\mathbb{E}(\mathbf{y}) = \mathbf{f}(\mathbf{X})$ and
 \begin{equation}
@@ -66,7 +69,6 @@ Given a data set $\mathcal{L} = \{(y_i, \mathbf{x}_i), i=0,1,...,n-1\}$ where $\
 \mathbf{y} = \mathbf{f}(\mathbf{X}) + \mathbf{\epsilon} \quad \text{, where} \quad \mathbf{f}(\mathbf{X}) = \mathbf{X} \mathbf{\beta} \quad \text{and} \quad \mathbf{\epsilon} \sim \mathcal{N}(0, \sigma^2).
 \end{equation}
 
-\subsection{Cost Functions and Bias-Variance Trade-off}
 In linear regression we aim find the best approximation $\mathbf{\tilde{y}} = \mathbf{X\hat{\beta}}$ to $\mathbf{f}$ by minimizing a cost function $C(\mathbf{X},\mathbb{\beta})$, which reflects the expected test error of the approximation \cite{james2013introduction}.
 
 For OLS, the cost function is simply given by the mean squared error (MSE) of the approximation
@@ -74,7 +76,7 @@ For OLS, the cost function is simply given by the mean squared error (MSE) of th
 \label{cost-ols}
 	C_{OLS}(\mathbf{X},\mathbb{\beta}) = \frac{1}{n} \sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2.
 \end{equation}
-Now, given Equation (\ref{y_f_eps}), we split the cost function into
+Now, to find the components making up the MSE, we use equation (\ref{y_f_eps}) and split the cost function into
 \begin{equation*}
 \begin{aligned}
 	C_{OLS}(\mathbf{X},\mathbb{\beta}) = \frac{1}{n} \sum_{i=0}^{n-1} (y_i - \tilde{y}_i)^2 &= \mathbb{E}[(\mathbf{y} - \mathbf{\tilde{y}})^2] = \mathbb{E}[(\mathbf{f} + \mathbf{\epsilon} - \mathbf{\tilde{y}})^2] \\
@@ -88,7 +90,7 @@ and since $\mathbb{E}(\mathbf{f}) = \mathbb{E}(\mathbf{\tilde{y}})$ we get OLS's
 \end{equation}
 The first term is the MSE of our approximation $\mathbf{\tilde{y}}$ to $\mathbf{f}$, which we aim to minimize. The second term is dependent on the data quality (instrument precision, round-off error, etc.) and is irreducible, or rather; reduction of the cost function beyond $\sigma^2$ leads to overfitting of the model. As a consequence, the quantity that we aim to determine in linear regression is the limit for the fit of our model, which is the irreducible error $\sigma^2$.
 
-The first term in equation (\ref{red-irred}) can be reduced into model \textit{bias} and model \textit{variance}, as outlined in \cite{friedman2001elements}. An approximation $\mathbf{\tilde{y}} = \mathbf{X\hat{\beta}}$ to $\mathbf{f}$ with too low complexity, say $\mathbf{\hat{\beta}} \in \mathbb{R}^2$, will have low variability in its response to different training sets, but the error will be heavily dependent on the choice of model, which is the bias. A too complex approximation, on the other hand, will have high variability in its test response, but generally be less biased. The first term in equation (\ref{red-irred}) can be reduced further to reflect this:
+The first term in equation (\ref{red-irred}) can be reduced into model \textit{bias} and model \textit{variance}, as outlined in \cite{friedman2001elements}. An approximation $\mathbf{\tilde{y}} = \mathbf{X\hat{\beta}}$ to $\mathbf{f}$ with too low complexity, say $\mathbf{\hat{\beta}} \in \mathbb{R}^2$ for a parabolic function, will have low variability in its response to different training sets, but the error will be heavily dependent on the choice of model, which is the bias. A too complex approximation, on the other hand, will have high variability in its test response, but generally be less biased. The first term in equation (\ref{red-irred}) can be reduced further to reflect this:
 \begin{equation}
 \begin{aligned}
 \mathbb{E}[(\mathbf{f} - \mathbf{\tilde{y}})^2] &= \mathbb{E}[[(\mathbf{f} - \mathbb{E}(\mathbf{\tilde{y}})) - (\mathbf{\tilde{y}}- \mathbb{E}(\mathbf{\tilde{y}}))]^2] \\ 
@@ -103,7 +105,7 @@ C_{OLS}(\mathbf{X},\mathbb{\beta}) &= \mathbb{E}[(\mathbf{f} - \mathbb{E}(\mathb
 &=\frac{1}{n}\sum_i(f_i-\mathbb{E}\left[\boldsymbol{\tilde{y}}\right])^2+\frac{1}{n}\sum_i(\tilde{y}_i-\mathbb{E}\left[\boldsymbol{\tilde{y}}\right])^2+\sigma^2,
 \end{aligned}
 \end{equation}
-and hence, to obtain the best possible expected test error we must trade bias off against variance.
+where the first term is the model's bias, or actually bias$^2$, the second is the variance in the response $\mathbf{\tilde{y}}$ to different test sets, and the last term is the error or noise in the data set, which as we saw is irreducible. We see that to obtain the best possible expected test error we must trade bias off against variance.
 
 For OLS, a better fit may be obtained by increasing model complexity to reduce the bias, up to the point where variance starts to influence the model negatively. To allow increasing complexity further, a larger training data set must be used. Ridge and LASSO, however, allows us to further increase model complexity without increasing the training data, by putting an \textit{extra} cost on variance. Since 
 \begin{equation}
@@ -135,10 +137,11 @@ f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}
 &+\frac{1}{2}\exp{\left(-\frac{(9x-7)^2}{4} - \frac{(9y-3)^2}{4}\right)} -\frac{1}{5}\exp{\left(-(9x-4)^2 - (9y-7)^2\right) }.
 \end{aligned}
 \end{equation}
-A $p$th degree polynomial in two variables $p_p(x,y) = 1 + x + y + x^2 + xy + y^2 ...$ can be used to approximate any function in two variables, such as the Franke function. We begin by collecting $n$ uniformly distributed random samples of the function $\mathcal{L}_{Franke} = \{(f(x_i, y_i), (x_i, y_i), i=0,1,...,n-1\}$. We first install the response variables (the )$y_i$s) in a vector $\mathbf{y} \in \mathbb{R}^n$. Then we set up our \textit{design matrix} $\mathbf{X} \in \mathbb{R}^{n \times (p+1)}$ containing our predictors by evaluating each of the $p+1$ terms in $p_p(x_i,y_i)$ and installing them in row $i$ of $\mathbf{X}$:
+A $p$th degree polynomial in two variables $p_p(x,y) = 1 + x + y + x^2 + xy + y^2 ...$ can be used to approximate any function in two variables, such as the Franke function. We begin by collecting $n$ uniformly distributed random samples of the function $\mathcal{L}_{Franke} = \{(f(x_i, y_i), (x_i, y_i), i=0,1,...,n-1\}$. We first install the response variables (the $y_i$s) in a vector $\mathbf{y} \in \mathbb{R}^n$. Then we set up our \textit{design matrix} $\mathbf{X} \in \mathbb{R}^{n \times (p+1)}$ containing our predictors by evaluating each of the $p+1$ terms in $p_p(x_i,y_i)$ and install them in row $i$ of $\mathbf{X}$:
 \begin{equation}
 \mathbf{x}_i = [1 \quad x_i \quad y_i \quad x_i^2 \quad xy \quad y_i^2 \quad \cdots].
 \end{equation}
+
 The next step is then to solve $\mathbf{y} = \mathbf{X\beta} + \mathbf{\epsilon}$ to obtain the optimum coefficient estimates $\mathbf{\hat{\beta}}$ with the constraints given by the linear regression method's cost function. In order not to unfairly penalize Ridge and LASSO's coefficient estimates due to the value of the predictors, we must standardize them, that is; give each of $\mathbf{X}$'s columns a standard deviation of one. We do this by dividing each of the columns by its standard deviation \cite{james2013introduction}. Also, to account for the intercept, we will center all except the first of $\mathbf{X}$'s columns by subtracting its mean.
 
 \subsection{The OLS Regression Method}
@@ -147,7 +150,7 @@ The ordinary least square's cost function $C_{OLS}(\mathbf{X},\mathbb{\beta})$ i
 \label{osl-reg}
 	\mathbf{\hat{\beta}} = (\mathbf{X}^\intercal \mathbf{X})^{-1} \mathbf{X}^\intercal \mathbf{y}.
 \end{equation}
-See \cite{van2015lecture} for a thorough outline. Since $\mathbf{X}^\intercal \mathbf{X}$ may be uninvertible, we could use singular value decomposition $\mathbf{X} = \mathbf{U \Sigma V}^\intercal$ to calculate the pseudoinverse $\mathbf{X}^+ = \mathbf{V \Sigma}^{-1} \mathbf{U}^\intercal$, and then solve (\ref{osl-reg}) by $\mathbf{\hat{\beta}} = \mathbf{X}^+ \mathbf{y}$. See \cite{lay2016linear}.
+See \cite{van2015lecture} for a thorough outline. Since $\mathbf{X}^\intercal \mathbf{X}$ may be uninvertible, we will use singular value decomposition $\mathbf{X} = \mathbf{U \Sigma V}^\intercal$ to calculate the pseudoinverse $\mathbf{X}^+ = \mathbf{V \Sigma}^{-1} \mathbf{U}^\intercal$, and then solve (\ref{osl-reg}) by $\mathbf{\hat{\beta}} = \mathbf{X}^+ \mathbf{y}$. See \cite{lay2016linear}.
 
 Let us first use the OLS method on some randomly drawn samples from the Franke function (\ref{franke}), where we have added some normally distributed noise, $\epsilon$. We see in Figure \ref{fig:ols-simple-varying-n} that the variance in the approximation improves dramatically with increasing number of samples. This is explained by the decreased variance in the coefficient estimates, and we can illustrate this by plotting the confidence interval for each coefficient. As seen in Figure \ref{fig:ols-ci95}, for higher number of samples, the 95 \% confidence interval shrinks, meaning that the range around the estimated coefficient $\hat\beta_j$ in which the true unknown coefficients $\beta_j$ lays is narrowed \cite{james2013introduction}. The confidence interval is calculated by
 \begin{equation}
@@ -174,7 +177,7 @@ Figure \ref{fig:ols-simple-varying-n} above illustrates the importance of re-sam
 
 In Bootstrap re-sampling we split the data into a training and a test set, usually keeping 2/3 to 4/5 of the samples for training \cite{assignment}. Then, assuming the training set has $m$ samples, we collect from it the same number $m$ samples \textit{with} replacement, and calculate from those our coefficient estimates. Then we evaluate the model fit using the test data, note the result, and repeat the process for a number of times depending on the data set.
 
-In $k$-fold cross-validation we also split the data into a training and a test set, but they are not fixed as for Bootstrap. Instead, we split the data into $k$ equally sized parts, keep one of the $k$ parts for test and train our model on the rest. Then we evaluate the model fit, note the result, and re-sample by picking the next of the $k$ parts, and handing the already tested part back to the training set. The process is repeated $k$ times (5-10) \cite{assignment} so that all of the data has been tested once.
+In $k$-fold cross-validation we also split the data into a training and a test set, but they are not fixed as for Bootstrap. Instead, we split the data into $k$ equally sized parts, keep one of the $k$ parts for test and train our model on the rest. Then we evaluate the model fit, note the result, and re-sample by picking the next of the $k$ parts, and handing the already tested part back to the training set. The process is repeated $k$ times (5-10 times in \cite{assignment}) so that all of the data has been tested once.
 
 In Figures \ref{fig:ols-bootstrap} and \ref{fig:ols-cv} we see again the error estimates for the Franke function, but this time estimated with Bootstrap and cross validation re-sampling, respectively. Note that the scaling is different, so that even if the shape of the curves are similar, the actual error presented by Bootstrap in the overfitting region is at least a factor 10-100 larger than for cross validation. However, for the best fit, they both largely estimate the irreducible error $\sigma^2$ correctly (blue-shaded area) on the 500- and 1000-sample sets. On the 100- and 250-sample sets, however, there is a marked overestimation by Bootstrap. It is also worth to note that for the 100- and 250-sample sets, the best fit for the test data is achieved approximately when the training fit enters the irreducible error area.
 
@@ -227,9 +230,9 @@ Figure \ref{fig:ridge-bootstrap} shows how Ridge operates: Increasing $\lambda$ 
 \end{figure}
 
 \subsection{The LASSO Regression Method}
-We saw in equation (\ref{cost-LASSO}) that like Ridge's cost function, LASSO's cost function $C_{LASSO}(\mathbf{X},\mathbb{\beta})$ introduces a penalty $\sum \lambda |\beta_j|$ on the coefficient estimates in order to reduce their variance. In contrast to Ridge, and OLS for that matter, LASSO's cost function does not have a closed form solution, meaning that for each $\lambda$ we must search both for a solution that minimizes the cost function itself. In this report we will use \lstinline|sklearn.linear_model.Lasso| in Python's \lstinline|scikit-learn| module to search for this solution.
+We saw in equation (\ref{cost-lasso}) that like Ridge's cost function, LASSO's cost function $C_{LASSO}(\mathbf{X},\mathbb{\beta})$ introduces a penalty $\sum \lambda |\beta_j|$ on the coefficient estimates in order to reduce their variance. In contrast to Ridge, and OLS for that matter, LASSO's cost function does not have a closed form solution, meaning that for each $\lambda$ we must search both for a solution that minimizes the cost function itself. In this report we will use \lstinline|sklearn.linear_model.Lasso| in Python's \lstinline|scikit-learn| module to search for this solution.
 
-Figures \ref{fig:lasso-bootstrap} and \ref{fig:lasso-cv} show plots of searches for $\mathbf{\hat{\beta}}, \hat{\lambda}$ using Bootstrap and $k$-fold cross validation resampling, respectively. Again, we see that both methods estimate the irreducible error almost equally well for the larger data sets, while cross validation is a little more stable for smaller data sets. The bias-variance trade-off, seen to the right in Figure \ref{fig:lasso-bootstrap}, behaves as we expect, with increased $\lambda$ reducing the variance in the response $\mathrm{Var}(\mathbf{\tilde{y}})$. This comes with a cost in model bias.
+Figures \ref{fig:lasso-bootstrap} and \ref{fig:lasso-cv} show plots of searches for $\mathbf{\hat{\beta}}, \hat{\lambda}$ using Bootstrap and $k$-fold cross validation resampling, respectively. Again, we see that both methods estimate the irreducible error almost equally well for the larger data sets, while cross validation is a little more stable for smaller data sets. The bias-variance trade-off, seen to the right in Figure \ref{fig:lasso-bootstrap}, behaves as we expect, with increased $\lambda$ reducing the variance in the response $\mathrm{Var}(\mathbf{\tilde{y}})$. This comes of course with a cost in model bias.
 
 \begin{figure}[!htb]
 	\centering
@@ -245,6 +248,7 @@ Figures \ref{fig:lasso-bootstrap} and \ref{fig:lasso-cv} show plots of searches 
 	\label{fig:lasso-cv}
 \end{figure}
 
+\clearpage
 \section{Results} \label{results}
 % - Present your results
 % - Give a critical discussion of your work and place it in the correct context.
@@ -256,7 +260,7 @@ To finish our qualitative evaluation of the OLS, Ridge and LASSO regression meth
 \subsection{OLS, Ridge and LASSO Coefficient Estimates}
 We expect that Ridge shall \textit{shrink} the coefficients more or less evenly, but not all the way to zero as we expect LASSO to do, since LASSO shall also pick those predictors that best explain $\mathbf{f}(\mathbf{X})$, and preferably drive the rest to zero. In addition, and as a consequence of this, we expect that the variance shall be greatly reduced, and more so for LASSO than Ridge, since it is more agressive. 
 
-Figure \ref{fig:ols-ridge-lasso-betas} shows the coefficient estimates $\hat{\beta}_j$ for OLS, Ridge and LASSO when fitting $p_6(x,y)$ to the Franke function with 1000 samples. $\lambda$s are chosen to give the best fit, according to our evaluation with cross validation above in Figures \ref{fig:ridge-cv} and \ref{fig:lasso-cv}. We see that indeed, the Ridge and LASSO do reduce the values of the estimates, and the variance is also reduced. In both cases, more aggressively for LASSO than for Ridge. However, in this case LASSO does not drive any of the coefficient estimates to zero, so we cannot derive some underlying truth about $\mathbf{f}(\mathbf{X})$ from them here, which may be reasonable since OSL's fit is just as good as Ridge and LASSO's for this model complexity.
+Figure \ref{fig:ols-ridge-lasso-betas} shows the coefficient estimates $\hat{\beta}_j$ for OLS, Ridge and LASSO when fitting $p_6(x,y)$ to the Franke function with 1000 samples. $\lambda$s are chosen to give the best fit, according to our evaluation with cross validation above in Figures \ref{fig:ridge-cv} and \ref{fig:lasso-cv}. We see that indeed, the Ridge and LASSO do reduce the values of the estimates, and the variance is also reduced. In both cases also more aggressively for LASSO than for Ridge. However, with this model on this data set LASSO does not drive any of the coefficient estimates to zero, so we cannot derive some underlying truth about $\mathbf{f}(\mathbf{X})$ from them here, which may be reasonable since OSL's fit is just as good as Ridge and LASSO's for this model complexity.
 
 \begin{figure}[!htb]
 	\centering
@@ -308,11 +312,20 @@ In Figure \ref{fig:geo-data}, we see how the three approximations reproduces the
 	\label{fig:geo-data}
 \end{figure}
 
+\clearpage
 \section{Discussion and Conclusion} \label{conclusion}
 % - State your main findings and interpretations
 % - Try as far as possible to present perspectives for future work
 % - Try to discuss the pros and cons of the methods and possible improvements
-We have seen that 
+In the controlled case with the Franke function, we saw that the assumption that the data points $\mathbf{y}, \mathbf{X}$ could be represented by a linear function $\mathbf{f}(\mathbf{X}) = \mathbf{\beta X}$ with an error $\mathbf{\epsilon} \sim \mathcal{N}(0, \sigma^2)$. We then saw that the best-fit solution $\mathbf{\hat{\beta}}$ to the equation $\mathbf{y} = \mathbf{\beta X} + \mathbf{\epsilon}$, given the cost functions for either OLS, Ridge and LASSO lets us reproduce the underlying function $\mathbf{f}$ with high accuracy, and that we also obtain a precise estimate for the error $\sigma^2$ in the data.
+
+The performance of the three regression methods appear to not be very dependent on whether we use Bootstrap of cross validation resampling if the data set is large enough, but for smaller data sets, cross validation performed best on the Franke data. This is good for two reasons; firstly that for this data it does not matter much which method we choose, and secondly because $k$-fold cross validation is faster than bootstrap since it runs through the data only 5 to 10 times, as opposed to 20 to 30 times for Bootstrap. Hence, cross validation is the method of choice here.
+
+We have also seen that Ridge and LASSO with cross validation perform better than OLS on smaller data sets, where number of $n$ is not much greater than $p$. The reason for this is that these methods let us choose a model with higher complexity than OLS, since they remedy the high variance in the response $\mathrm{Var}(\mathbf{y})$ which would otherwise occur by penalizing large coefficient estimates and reducing their variance.
+
+On the geological data, on the other hand, $n >> p$, which is ideal for OLS, since complexity can be increased without too high cost in variance, and the randomness in the test data will closely resemble that of the training data. As a result, OLS performs markedly better than Ridge here, and LASSO performs quite poorly, as we saw in the image reproduction in Figure \ref{fig:geo-data}.
+
+Future expansion of this study should include more kinds of \textit{aerially} distributed data, like fertility vs. location or income vs. a persons physical weight and height, to proper gauge where OLS, Ridge and LASSO each come to best use in these applications.
 
 \clearpage
 \bibliographystyle{plain}
