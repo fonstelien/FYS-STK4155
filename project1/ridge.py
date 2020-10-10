@@ -18,19 +18,28 @@ def run_ridge_bootstrap(X, z, f=None, polynomial_orders=[], lambdas=[], train_si
     bias_test = np.ndarray(num_lambdas)
     var_test = np.ndarray(num_lambdas)
 
+    X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(X, z, f, train_size=train_size, random_state=0)
+    X_train, X_test = scale(X_train, X_test)
+
     for pn in polynomial_orders:
-        Xpn = truncate_to_poly(X, pn)
-        X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(Xpn, z, f, train_size=train_size)
-        X_train, X_test = scale(X_train, X_test)
+        X_train_pn = truncate_to_poly(X_train, pn)
+        X_test_pn = truncate_to_poly(X_test, pn)
 
         z_test_tilde = np.ndarray((X_test.shape[0], bootstraps))
         for i, lmd in enumerate(lambdas):
-            L = lmd*np.identity(X_train.shape[1])
+            L = lmd*np.identity(X_train_pn.shape[1])
+
             for bs in range(bootstraps):
-                X_resampled, z_resampled = skl.utils.resample(X_train, z_train, random_state=bs)
+                X_resampled, z_resampled = skl.utils.resample(X_train_pn, z_train, random_state=bs)
                 beta_hat = np.linalg.inv(X_resampled.T @ X_resampled + L) @ X_resampled.T @ z_resampled
+
                 mse_train_buf[bs] = mse(z_resampled, X_resampled @ beta_hat)
-                z_test_tilde[:,bs] = (X_test @ beta_hat).ravel()
+                z_test_tilde[:,bs] = (X_test_pn @ beta_hat).ravel()
+
+                #ridge = skl.linear_model.Ridge(alpha=lmd, random_state=pn)
+                #ridge.fit(X_resampled, z_resampled)
+                #mse_train_buf[bs] = mse(z_resampled, ridge.predict(X_resampled))
+                #z_test_tilde[:,bs] = (ridge.predict(X_test_pn)).ravel()
 
             mse_train[i] = np.mean(mse_train_buf)
             mse_test[i] = mse(z_test, z_test_tilde)
@@ -60,6 +69,7 @@ def run_ridge_kfold(X, z, k=10, polynomial_orders=[], lambdas=[]):
 
     for pn in polynomial_orders:
         Xpn = truncate_to_poly(X, pn)
+
         for i, lmd in enumerate(lambdas):
             for j, (train_split, test_split) in enumerate(zip(*splits)):
                 X_train = Xpn[train_split]

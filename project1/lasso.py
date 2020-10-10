@@ -2,6 +2,7 @@ from utils import *
 from sklearn.utils.testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
+
 @ignore_warnings(category=ConvergenceWarning)
 def lasso_bootstrap(X, z, f=None, polynomial_orders=[], lambdas=[], train_size=.7, bootstraps=20, **kwargs):
     '''Runs LASSO regression with Bootstrap resampling on X, z, f on every polynomial up to polynomial_orders and for every lambda in lambdas. **kwargs are forwarded to skl.linear_model.Lasso. Returns DataFrame with columns=["lambda", "train_mse", "test_mse", "test_bias", "test_var"]'''
@@ -19,21 +20,22 @@ def lasso_bootstrap(X, z, f=None, polynomial_orders=[], lambdas=[], train_size=.
     bias_test = np.ndarray(num_lambdas)
     var_test = np.ndarray(num_lambdas)
 
+    X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(X, z, f, train_size=train_size, random_state=0)
+    X_train, X_test = scale(X_train, X_test)
     for pn in polynomial_orders:
-        Xpn = truncate_to_poly(X, pn)
-        X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(Xpn, z, f, train_size=train_size)
-        X_train, X_test = scale(X_train, X_test)
+        X_train_pn = truncate_to_poly(X_train, pn)
+        X_test_pn = truncate_to_poly(X_test, pn)
 
-        beta_hat = np.ndarray((X_train.shape[1], 1))
+        beta_hat = np.ndarray((X_train_pn.shape[1], 1))
         z_test_tilde = np.ndarray((z_test.shape[0], bootstraps))
         for i, lmd in enumerate(lambdas):
             lasso = skl.linear_model.Lasso(alpha=lmd, **kwargs)
             for bs in range(bootstraps):
-                X_resampled, z_resampled = skl.utils.resample(X_train, z_train, random_state=bs)
+                X_resampled, z_resampled = skl.utils.resample(X_train_pn, z_train, random_state=bs)
                 lasso.fit(X_resampled, z_resampled)
                 beta_hat[:,0] = lasso.coef_
                 mse_train_buf[bs] = mse(z_resampled, X_resampled @ beta_hat)
-                z_test_tilde[:,bs] = (X_test @ beta_hat).ravel()
+                z_test_tilde[:,bs] = (X_test_pn @ beta_hat).ravel()
 
             mse_train[i] = np.mean(mse_train_buf)
             mse_test[i] = mse(z_test, z_test_tilde)

@@ -137,19 +137,21 @@ f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}
 &+\frac{1}{2}\exp{\left(-\frac{(9x-7)^2}{4} - \frac{(9y-3)^2}{4}\right)} -\frac{1}{5}\exp{\left(-(9x-4)^2 - (9y-7)^2\right) }.
 \end{aligned}
 \end{equation}
-A $p$th degree polynomial in two variables $p_p(x,y) = 1 + x + y + x^2 + xy + y^2 ...$ can be used to approximate any function in two variables, such as the Franke function. We begin by collecting $n$ samples of the function $\mathcal{L}_{Franke} = \{(f(x_i, y_i), (x_i, y_i), i=0,1,...,n-1\}$. Then we set up our \textit{design matrix} $\mathbf{X} \in \mathbb{R}^{n \times (p+1)}$ by evaluating each of the $p+1$ terms in $p_p(x_i,y_i)$ and installing them in row $i$ of $\mathbf{X}$:
+A $p$th degree polynomial in two variables $p_p(x,y) = 1 + x + y + x^2 + xy + y^2 ...$ can be used to approximate any function in two variables, such as the Franke function. We begin by collecting $n$ uniformly distributed random samples of the function $\mathcal{L}_{Franke} = \{(f(x_i, y_i), (x_i, y_i), i=0,1,...,n-1\}$. We first install the response variables (the )$y_i$s) in a vector $\mathbf{y} \in \mathbb{R}^n$. Then we set up our \textit{design matrix} $\mathbf{X} \in \mathbb{R}^{n \times (p+1)}$ containing our predictors by evaluating each of the $p+1$ terms in $p_p(x_i,y_i)$ and installing them in row $i$ of $\mathbf{X}$:
 \begin{equation}
 \mathbf{x}_i = [1 \quad x_i \quad y_i \quad x_i^2 \quad xy \quad y_i^2 \quad \cdots].
 \end{equation}
-The next step is then to solve $\mathbf{y} = \mathbf{X\beta} + \mathbf{\epsilon}$ to obtain the optimum coefficient estimates $\mathbf{\hat{\beta}}$ with the constraints given by the linear regression method's cost function.
+The next step is then to solve $\mathbf{y} = \mathbf{X\beta} + \mathbf{\epsilon}$ to obtain the optimum coefficient estimates $\mathbf{\hat{\beta}}$ with the constraints given by the linear regression method's cost function. In order not to unfairly penalize Ridge and LASSO's coefficient estimates due to the value of the predictors, we must standardize them, that is; give each of $\mathbf{X}$'s columns a standard deviation of one. We do this by dividing each of the columns by its standard deviation \cite{james2013introduction}. Also, to account for the intercept, we will center all except the first of $\mathbf{X}$'s columns by subtracting its mean.
 
-\subsection{OLS Regression Method}
-The ordinary least square's cost function $C_{OLS}(\mathbf{X},\mathbb{\beta})$ has a closed form solution for obtaining the optimum coefficient estimates given by
+\subsection{The OLS Regression Method}
+The ordinary least square's cost function $C_{OLS}(\mathbf{X},\mathbb{\beta})$ in equation (\ref{cost-ols}) has a closed form solution for obtaining the optimum coefficient estimates given by
 \begin{equation}
 \label{osl-reg}
 	\mathbf{\hat{\beta}} = (\mathbf{X}^\intercal \mathbf{X})^{-1} \mathbf{X}^\intercal \mathbf{y}.
 \end{equation}
-See \cite{van2015lecture} for a thorough outline. Let us first try this out on some randomly drawn samples from the Franke function (\ref{franke}), where we have added some normally distributed noise, $\epsilon$. We see in Figure \ref{fig:ols-simple-varying-n} that the variance in the approximation improves dramatically with increasing number of samples. This is explained by the decreased variance in the coefficient estimates, and we can illustrate this by plotting the confidence interval for each coefficient. As seen in Figure \ref{fig:ols-ci95}, for higher number of samples, the 95 \% confidence interval shrinks, meaning that the range around the estimated coefficient $\hat\beta_j$ in which the true unknown coefficients $\beta_j$ lays is narrowed \cite{james2013introduction}. The confidence interval is calculated by
+See \cite{van2015lecture} for a thorough outline. Since $\mathbf{X}^\intercal \mathbf{X}$ may be uninvertible, we could use singular value decomposition $\mathbf{X} = \mathbf{U \Sigma V}^\intercal$ to calculate the pseudoinverse $\mathbf{X}^+ = \mathbf{V \Sigma}^{-1} \mathbf{U}^\intercal$, and then solve (\ref{osl-reg}) by $\mathbf{\hat{\beta}} = \mathbf{X}^+ \mathbf{y}$. See \cite{lay2016linear}.
+
+Let us first use the OLS method on some randomly drawn samples from the Franke function (\ref{franke}), where we have added some normally distributed noise, $\epsilon$. We see in Figure \ref{fig:ols-simple-varying-n} that the variance in the approximation improves dramatically with increasing number of samples. This is explained by the decreased variance in the coefficient estimates, and we can illustrate this by plotting the confidence interval for each coefficient. As seen in Figure \ref{fig:ols-ci95}, for higher number of samples, the 95 \% confidence interval shrinks, meaning that the range around the estimated coefficient $\hat\beta_j$ in which the true unknown coefficients $\beta_j$ lays is narrowed \cite{james2013introduction}. The confidence interval is calculated by
 \begin{equation}
 \label{ci}
 	\mathrm{CI_{95}^{(j)}}: \hat{\beta}_j \pm \mathrm{Var}(\hat{\beta}_j) \quad \text{where} \quad \mathrm{Var}(\hat{\beta}_j) = \sigma^2\sqrt{[(\mathbf{X}^\intercal \mathbf{X})^{-1}]_{jj}}.
@@ -176,29 +178,75 @@ In Bootstrap re-sampling we split the data into a training and a test set, usual
 
 In $k$-fold cross-validation we also split the data into a training and a test set, but they are not fixed as for Bootstrap. Instead, we split the data into $k$ equally sized parts, keep one of the $k$ parts for test and train our model on the rest. Then we evaluate the model fit, note the result, and re-sample by picking the next of the $k$ parts, and handing the already tested part back to the training set. The process is repeated $k$ times (5-10) \cite{assignment} so that all of the data has been tested once.
 
-In Figures \ref{fig:ols-bootstrap} and \ref{fig:ols-cv} we see again the error estimates for the Franke function, but this time estimated with Bootstrap and cross validation re-sampling, respectively. Note that the scaling is different, so that even if the shape of the curves are similar, the actual error presented by Bootstrap in the overfitting region is at least a factor 10-100 larger than for cross validation. However, for the best fit, they both largely predict the same error on the 500- and 1000-sample sets, while on the 100- and 250-sample sets there is a marked overestimation by Bootstrap.
+In Figures \ref{fig:ols-bootstrap} and \ref{fig:ols-cv} we see again the error estimates for the Franke function, but this time estimated with Bootstrap and cross validation re-sampling, respectively. Note that the scaling is different, so that even if the shape of the curves are similar, the actual error presented by Bootstrap in the overfitting region is at least a factor 10-100 larger than for cross validation. However, for the best fit, they both largely estimate the irreducible error $\sigma^2$ correctly (blue-shaded area) on the 500- and 1000-sample sets. On the 100- and 250-sample sets, however, there is a marked overestimation by Bootstrap. It is also worth to note that for the 100- and 250-sample sets, the best fit for the test data is achieved approximately when the training fit enters the irreducible error area.
 
-Figure \ref{fig:ols-bootstrap} also presents the estimated bias-variance trade-off. We see that as expected, variance increases with model complexity, while bias decreases up to a point where high model complexity itself creates bias.
+Figure \ref{fig:ols-bootstrap} also presents the estimated bias-variance trade-off. We see that as expected, variance increases with model complexity, while bias decreases up to a point where high complexity itself makes the model biased.
 
+Lastly, we note that the choice of $k$ does not seem to influence the results greatly for cross validation on this data set. We will use this to limit our scope when we do a similar evaluation of Ridge and LASSO further down.
 
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[width=1\linewidth]{./results/ols-bootstrap.png}
-	\caption{Estimated error for the OLS polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and Bootstrap re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. The estimates are calculated with a train-test split of 70/30 and with 25 bootstraps. We see that for the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ well, while for the 100- and 250-sample sets it overestimates it. Cross validation performs a little better in this area. See Figure \ref{fig:ols-cv}.}
+	\caption{Estimated error for the OLS polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and Bootstrap re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. $\mathbf{X}$ has been centered, but not scaled. The estimates are calculated with a train-test split of 70/30 and with 25 bootstraps. We see that for the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ well, while for the 100- and 250-sample sets it overestimates it. Cross validation performs a little better in this area. See Figure \ref{fig:ols-cv}. Concerning bias-variance trade-off, we see that as expected, for all data sets variance increases with increasing model complexity, while bias is reduced until complexity itself makes the model biased.}
 	\label{fig:ols-bootstrap}
 \end{figure}
 
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[width=1\linewidth]{./results/ols-cv.png}
-	\caption{Estimated error for the OLS polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and $k$-fold cross validation re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. The estimates are calculated with a $k$s 5, 10 and 20. We see that the choice of $k$ does not influence the estimates except for in the overfitted area. For the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ well, while for the 100- and 250-sample sets it overestimates it, if however lesser than that of Bootstrap. See Figure \ref{fig:ols-bootstrap}.}
+	\caption{Estimated error for the OLS polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and $k$-fold cross validation re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. $\mathbf{X}$ has been centered, but not scaled. The estimates are calculated with $k$s 5, 10 and 20. We see that the choice of $k$ does not influence the estimates except for in the overfitted area. For the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ well, while for the 100- and 250-sample sets it overestimates it, but less so than does Bootstrap, though. See Figure \ref{fig:ols-bootstrap}.}
 	\label{fig:ols-cv}
 \end{figure}
 
-\subsection{Ridge Regression Method}
+\subsection{The Ridge Regression Method}
+We saw in equation (\ref{cost-ridge}) that Ridge's cost function $C_{Ridge}(\mathbf{X},\mathbb{\beta})$ introduces a penalty $\sum \lambda \beta_j^2$ on the coefficient estimates in order to reduce their variance. As with OLS, Ridge's cost function also has a closed form solution for obtaining the coefficient estimates:
+\begin{equation}
+\label{ridge-reg}
+	\mathbf{\beta}(\lambda) = (\mathbf{X}^\intercal \mathbf{X} + \lambda \mathbf{I})^{-1} \mathbf{X}^\intercal \mathbf{y}.
+\end{equation}
+In contrast to the solution to OLS's cost function, due to the addition of $\lambda \mathbf{I}$ the matrix $(\mathbf{X}^\intercal \mathbf{X} + \lambda \mathbf{I})$ \textit{is} invertible, which eases its solution. Again, see \cite{van2015lecture} for a thorough outline. Performing singular value decomposition on $\mathbf{X}$ does reveal an interesting property of Ridge regression. As shown in \cite{murphy2012machine}, with $\mathbf{X} = \mathbf{U \Sigma V}^\intercal$ and $\mathbf{u}_j$ being the $j$th row of $\mathbf{U}$, we can write equation (\ref{ridge-reg}) as
+\begin{equation}
+	\mathbf{\beta}(\lambda) = \sum_{j=1}^{p} \mathbf{u}_j \frac{\sigma_j^2}{\sigma_j^2 + \lambda} \mathbf{u}_j ^\intercal \mathbf{y}.
+\end{equation}
+This shows that introduction of the $\lambda$ term in Ridge's cost function (\ref{cost-ridge}) dampens or shrinks the coefficient estimates $\mathbf{\beta}$. See Figure \ref{fig:ols-ridge-lasso-comp} again for an illustration of this.
 
+Even if we have a closed form solution to equation (\ref{ridge-reg}), finding the \textit{optimum} solution $\mathbf{\hat{\beta}} = \mathbf{\beta}(\hat{\lambda})$ must be done by trial and error. Figures \ref{fig:ridge-bootstrap} and \ref{fig:ridge-cv} show plots of searches for $\hat{\lambda}$ using Bootstrap and $k$-fold cross validation resampling, respectively. We see that both methods estimate the error well, but that cross validation only needs 500 samples for an exact approximation of the irreducible error $\sigma^2$, whereas Bootstrap needs 1000 (blue-shaded area). They both find the best fit for $p_5(x,y)$, all though for slightly different $\lambda$ value. MSE remains more or less unaffected by model complexity after that. For the other data sets, we see again as we saw for OLS that cross validation has better estimates than Bootstrap, even if the differences are less pronounced this time.
 
-\subsection{LASSO Regression Method}
+Figure \ref{fig:ridge-bootstrap} shows how Ridge operates: Increasing $\lambda$ forces the variance in the response $\mathrm{Var}(\mathbf{\tilde{y}})$ down, with a corresponding cost to bias. At the optimum point, $\hat{\lambda} = 3.09 \cdot 10^{-5}$ here, this trade-off reaches a best-ratio, which we select to fit our model.
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/ridge-bootstrap.png}
+	\caption{Estimated error for the Ridge polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and Bootstrap re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. $\mathbf{X}$ has been centered and scaled. The estimates are calculated with a train-test split of 70/30 and with 25 bootstraps. To the left we see that we see that severe overfitting is prevented in all cases. For the 1000-sample set, the model estimates the irreducible error $\sigma^2$ accurately at around $p_5(x,y)$ and it remains very stable for increasing model complexity. The 500-sample set has a slight overfit beginning at around $p_{10}(x,y)$, but the error approximation is still good. The 250-sample set overestimates $\sigma^2$ by about 33 \%, but has about the same level of overfitting as the 500-sample set. The 100-sample has a best approximation of about $2\sigma^2$. Cross validation performs a better for small data sets. See Figure \ref{fig:ridge-cv}. To the right we see the bias-variance trade-off depending on $\lambda$. Increasing $\lambda$ reduces the variance in the response, which comes with a cost in bias, as expected from Ridge.}
+	\label{fig:ridge-bootstrap}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/ridge-cv.png}
+	\caption{Estimated error for the Ridge polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and 5-fold cross validation re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. $\mathbf{X}$ has been centered and scaled. To the left we see that the train MSE indicates heavy overfitting, but in the middle that Ridge prevents severe overfitting in all test cases. For the 500-sample set, the model estimates the irreducible error $\sigma^2$ accurately at $p_5(x,y)$ and that it has a slight overfit after that, but the error approximation is still good. The 1000-sample remains approximation remains very stable for increasing model complexity. The 250-sample set overestimates $\sigma^2$ only by about 10 \%, and has about the same level of overfitting as the 500-sample set. The 100-sample overestimates $\sigma^2$ by about 33 \%. Overall, cross validation performs better than Bootstrap on this data set. See Figure \ref{fig:ridge-bootstrap}. To the right we see test MSE as a function of $\lambda$ for the 500-sample approximations.}
+	\label{fig:ridge-cv}
+\end{figure}
+
+\subsection{The LASSO Regression Method}
+We saw in equation (\ref{cost-LASSO}) that like Ridge's cost function, LASSO's cost function $C_{LASSO}(\mathbf{X},\mathbb{\beta})$ introduces a penalty $\sum \lambda |\beta_j|$ on the coefficient estimates in order to reduce their variance. In contrast to Ridge, and OLS for that matter, LASSO's cost function does not have a closed form solution, meaning that for each $\lambda$ we must search both for a solution that minimizes the cost function itself. In this report we will use \lstinline|sklearn.linear_model.Lasso| in Python's \lstinline|scikit-learn| module to search for this solution.
+
+Figures \ref{fig:lasso-bootstrap} and \ref{fig:lasso-cv} show plots of searches for $\mathbf{\hat{\beta}}, \hat{\lambda}$ using Bootstrap and $k$-fold cross validation resampling, respectively. Again, we see that both methods estimate the irreducible error almost equally well for the larger data sets, while cross validation is a little more stable for smaller data sets. The bias-variance trade-off, seen to the right in Figure \ref{fig:lasso-bootstrap}, behaves as we expect, with increased $\lambda$ reducing the variance in the response $\mathrm{Var}(\mathbf{\tilde{y}})$. This comes with a cost in model bias.
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/lasso-bootstrap.png}
+	\caption{Estimated error for the LASSO polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and Bootstrap re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. $\mathbf{X}$ has been centered and scaled. The estimates are calculated with a train-test split of 70/30 and with 25 bootstraps. To the left we see that severe overfitting is prevented in all cases. For the 1000-sample set, the model estimates the irreducible error $\sigma^2$ fairly well at around $p_4(x,y)$ and it remains very stable for increasing model complexity. It may seem a little strange that the fit in this case is \textit{better} than $\sigma^2$, but this comes from the randomness of the test set samples, indicating that they are ever so slightly off-center. Repeating the experiment with a different test set could yield a best fit slightly above the line. The 500-sample approximation performs almost equally well as the 1000-sample approximation, and show no sign of overfitting. The 100- and 250-sample sets overestimates $\sigma^2$ by about 50 \%, and show slight signs of overfitting. Bootstrap performs somewhat better than cross validation on smaller data sets, and worse on larger. See Figure \ref{fig:lasso-cv}. To the right we see the bias-variance trade-off depending on $\lambda$. Increasing $\lambda$ reduces the variance in the response, which as we see comes with a quite significant cost in bias, leading to a relatively small $\hat{\lambda}$.}
+	\label{fig:lasso-bootstrap}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{./results/lasso-cv.png}
+	\caption{Estimated error for the LASSO polynomial fit to the Franke function (\ref{franke}) with 100, 250, 500 and 1000 samples and 5-fold cross validation re-sampling. Added noise is $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.03)$, indicated by the blue-shaded area. $\mathbf{X}$ has been centered and scaled. To the left we see that the train MSE indicates heavy overfitting, but in the middle that LASSO prevents severe overfitting in all test cases. For the 500- and 1000-sample sets, the model estimates the irreducible error $\sigma^2$ quite accurately at $p_5(x,y)$ and do not show any overfitting after that. Increasing model complexity beyond $p_{15}(x,y)$ did not improve the $R^2$ value when that was tested (not shown). The 250-sample set also estimates $\sigma^2$ well at $p_8(x,y)$, before it gets a slight overfit. The 100-sample overestimates $\sigma^2$ by about 20 \% at $p_4(x,y)$, and then. Bootstrap performs somewhat better than cross validation on smaller data sets, and worse on larger. See Figure \ref{fig:lasso-bootstrap}. To the right we see test MSE as a function of $\lambda$ for the 1000-sample approximations.}
+	\label{fig:lasso-cv}
+\end{figure}
+
 
 
 \section{Results}
@@ -207,6 +255,11 @@ Figure \ref{fig:ols-bootstrap} also presents the estimated bias-variance trade-o
 % - Relate your work to other calculations/studies
 % - An eventual reader should be able to reproduce your calculations if she/he wants to do so. All input variables should be properly explained.
 % - Make sure that figures and tables should contain enough information in their captions, axis labels etc so that an eventual reader can gain a first impression of your work by studying figures and tables only.
+
+\subsection{Franke Function: Comparison of the OLS, Ridge and LASSO Regression Methods}
+
+
+\subsection{Geological Data: Comparison of the OLS, Ridge and LASSO Regression Methods}
 
 
 
