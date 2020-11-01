@@ -1,39 +1,10 @@
 '''Ordinary Least Squares regression methods'''
 
 from utils import *
-
-def run_ols_bootstrap(X, z, f=None, polynomial_orders=[], train_size=.7, bootstraps=20):
-    '''Runs Ordinary Least Square regression with Bootstrap resampling on X, z on every polynomial up to max_poly_order. Returns DataFrame with columns=["pol_order", "train_mse", "test_mse", "test_bias", "test_var"]'''
-
-    if f is None:
-        f = z
-
-    ols_bs_df = DataFrame(columns=["pol_order", "train_mse", "test_mse", "test_bias", "test_var"])
-    mse_train_buf = np.ndarray(bootstraps)
-
-    X_train, X_test, z_train, z_test, _, f_test = skl.model_selection.train_test_split(X, z, f, train_size=train_size, random_state=0)
-    X_train, X_test = scale(X_train, X_test, with_std=False)
-    for pn in polynomial_orders:
-        X_train_pn = truncate_to_poly(X_train, pn)
-        X_test_pn = truncate_to_poly(X_test, pn)
-
-        z_test_tilde = np.ndarray((len(z_test), bootstraps))
-        for bs in range(bootstraps):
-            X_resampled, z_resampled = skl.utils.resample(X_train_pn, z_train, random_state=bs)
-            beta_hat = np.linalg.pinv(X_resampled) @ z_resampled
-            mse_train_buf[bs] = mse(z_resampled, X_resampled @ beta_hat)
-            z_test_tilde[:, bs] = (X_test_pn @ beta_hat).ravel()
-
-        mse_train = np.mean(mse_train_buf)
-        mse_test = mse(z_test, z_test_tilde)
-        bias_test = bias(z_test, z_test_tilde)
-        var_test = var(z_test_tilde)
-        ols_bs_df.loc[pn] = [pn, mse_train, mse_test, bias_test, var_test]
-
-    return ols_bs_df
+from StochasticGradientDescent import SGD
 
 
-def run_ols_kfold(X, z, k=10, polynomial_orders=[]):
+def run_ols_kfold(X, z, SGD, k=10, polynomial_orders=[]):
     '''Runs Ordinary Least Square regression with k-fold resampling on X, z on every polynomial up to max_poly_order. Returns DataFrame with columns=["pol_order", "train_mse", "test_mse"]'''
 
     ols_k_df = DataFrame(columns=["pol_order", "train_mse", "test_mse"])
@@ -49,9 +20,9 @@ def run_ols_kfold(X, z, k=10, polynomial_orders=[]):
             X_test = Xpn[test_split]
             z_test = z[test_split]
 
-            X_train, X_test = scale(X_train, X_test, with_std=False)
-
-            beta_hat = np.linalg.pinv(X_train) @ z_train
+            # X_train, X_test = scale(X_train, X_test, with_std=False)
+            
+            beta_hat = SGD.run(X_train, z_train)
             mse_train[i] = mse(z_train, X_train @ beta_hat)
             mse_test[i] = mse(z_test, X_test @ beta_hat)
 

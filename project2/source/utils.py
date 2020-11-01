@@ -75,14 +75,14 @@ def make_design_matrix(x, y, pn=5):
     xn = yn = 0
     for i in range(pn+1):
         for j in range(i+1):
-            x_exponents[xn] = j
-            xn += 1
-        for j in range(i,-1,-1):
             y_exponents[yn] = j
             yn += 1
+        for j in range(i,-1,-1):
+            x_exponents[xn] = j
+            xn += 1
 
     for i, (xi, yi) in enumerate(zip(x, y)):
-        X[i,:] = [(x[i]**xn)*(y[i]**yn) for xn, yn in zip(x_exponents, y_exponents)]
+        X[i,:] = [(xi**xn)*(yi**yn) for xn, yn in zip(x_exponents, y_exponents)]
 
     return X
 
