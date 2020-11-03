@@ -39,8 +39,8 @@ class Layer:
         self.deltas = cost_derivatives * activation_derivatives
         return (self.deltas, self.weights)
     
-    def update_weights(self, eta, inputs):
-        self.weights = self.weights - eta*(inputs.T @ self.deltas)
+    def update_weights(self, eta, lmd, inputs):
+        self.weights = self.weights*(1-eta*lmd) - eta*(inputs.T @ self.deltas)
         return self.weights
 
     def update_biases(self, eta):
@@ -53,6 +53,20 @@ class FFNN:
         return -2*(T - A)
 
     _cost_func_derivatives = {'mse':_mse_derivative}
+
+    def _learning_schedule_constant(self, eta0, *args):
+        return eta0
+
+    def _learning_schedule_invscaling(self, eta0, t, *args):
+        return eta0/(t+1)**.5
+
+    def _learning_schedule_optimal(self, eta0, t, t0, alpha, *args):
+        return 1./(alpha*(t0 + t))
+
+
+    _learning_schedules = {'constant':_learning_schedule_constant,
+                           'invscaling':_learning_schedule_invscaling,
+                           'optimal':_learning_schedule_optimal}
     
     def __init__(self, num_features, cost_function='mse'):
         self.num_features = num_features
@@ -67,33 +81,60 @@ class FFNN:
         new_layer = Layer(num_nodes, num_inputs, activation_function)
         self.layers.append(new_layer)
         return new_layer
+    
+    def train(self, features, targets, epochs=100, batches=100,
+              learning_schedule='constant', eta0=.01, t0=None, lmd=None):
+        n, p = features.shape
+        n_batch = int(n/batches)
+
+        cost_func_derivative = self._cost_func_derivatives[self.cost_function]
+        schedule_func = self._learning_schedules[learning_schedule]
+        
+        if not t0:
+            t0 = 1.
+        alpha = eta0
+        if lmd:
+            alpha = lmd
+        if not lmd:
+            lmd = 0.
+        
+        for epoch in range(epochs):
+            features_shff, targets_shff = skl.utils.resample(
+                features, targets, replace=False, random_state=epoch)
+
+            for batch in range(batches):
+                features_batch = features_shff[batch*n_batch:(batch+1)*n_batch]
+                targets_batch = targets_shff[batch*n_batch:(batch+1)*n_batch]
                 
-    def train(self, design_matrix, targets, eta=.01, eps=.01, max_iter=100):
-        for iteration in range(max_iter):
-            inputs = design_matrix
-            for layer in self.layers:
-                inputs = layer.feed_forward(inputs)
+                ## Feed forward
+                inputs = features_batch
+                for layer in self.layers:
+                    inputs = layer.feed_forward(inputs)
 
-            cost_func_derivative = self._cost_func_derivatives[self.cost_function]
-            cost_derivatives = cost_func_derivative(self, inputs, targets)        
-            for layer in reversed(self.layers):
-                deltas, weights = layer.back_propagate(cost_derivatives)
-                cost_derivatives = deltas @ weights.T
+                ## Back-propagate
+                cost_derivatives = cost_func_derivative(self, inputs, targets_batch)
+                for layer in reversed(self.layers):
+                    deltas, weights = layer.back_propagate(cost_derivatives)
+                    cost_derivatives = deltas @ weights.T
 
-            inputs = design_matrix
-            for layer in self.layers:
-                layer.update_weights(eta, inputs)
-                layer.update_biases(eta)
-                inputs = layer.outputs
+                ## Update network
+                t = epoch*batches + batch
+                eta = schedule_func(self, eta0, t, t0, alpha)
+                # print(eta)
+                inputs = features_batch
+                for layer in self.layers:
+                    layer.update_weights(eta, lmd, inputs)
+                    layer.update_biases(eta)
+                    inputs = layer.outputs
 
-            # print('outputs\n', layer.outputs)
-            # print('weights\n',layer.weights)
-            # print('biases\n',layer.biases)
+                # print('outputs\n', layer.outputs)
+                # print('weights\n',layer.weights)
+                # print('biases\n',layer.biases)
         
         return layer.outputs
             
-    def test(self, design_matrix):
-        inputs = design_matrix
+    def test(self, features):
+        inputs = features
         for layer in self.layers:
             inputs = layer.feed_forward(inputs)
         return layer.outputs
