@@ -27,13 +27,22 @@ class Layer:
     def _leaky_relu_derivative(self, z):
         return (z <= 0)*self._leaky_relu_f + (z > 0) ## def. deriv. at 0 as _leaky_relu_f
 
+    def _softmax(self, z):
+        e = np.exp(z)
+        return e/np.sum(e, axis=1, keepdims=True)
+
+    def _softmax_derivative(self, z):
+        return np.ones(z.shape)
+    
     
     _activation_funcs = {'sigmoid':_sigmoid,
                          'relu':_relu,
-                         'leaky-relu':_leaky_relu}
+                         'leaky-relu':_leaky_relu,
+                         'softmax':_softmax}
     _activation_func_derivatives = {'sigmoid':_sigmoid_derivative,
                                     'relu':_relu_derivative,
-                                    'leaky-relu':_leaky_relu_derivative}
+                                    'leaky-relu':_leaky_relu_derivative,
+                                    'softmax':_softmax_derivative}
     
     def __init__(self, num_nodes, num_inputs, activation_function='sigmoid'):
         np.random.seed(0)
@@ -41,19 +50,19 @@ class Layer:
         self.biases = np.zeros(num_nodes) + .01
         self.weights = np.random.rand(num_inputs, num_nodes)
         self.activation_function = activation_function
-        self.activation_inputs = None  # matrix (num_samples x num_nodes)
+        self.inputs = None  # matrix (num_samples x num_nodes)
         self.outputs = None  # matrix (num_samples x num_nodes)
         self.deltas = None  # matrix (num_samples x num_nodes)
         
     def feed_forward(self, inputs):
         activation_func = self._activation_funcs[self.activation_function]
-        self.activation_inputs = inputs @ self.weights + self.biases
-        self.outputs = activation_func(self, self.activation_inputs)
+        self.inputs = inputs @ self.weights + self.biases
+        self.outputs = activation_func(self, self.inputs)
         return self.outputs
 
     def back_propagate(self, cost_derivatives):
         activation_func_derivative = self._activation_func_derivatives[self.activation_function]
-        activation_derivatives = activation_func_derivative(self, self.activation_inputs)
+        activation_derivatives = activation_func_derivative(self, self.inputs)
         self.deltas = cost_derivatives * activation_derivatives
         return (self.deltas, self.weights)
     
