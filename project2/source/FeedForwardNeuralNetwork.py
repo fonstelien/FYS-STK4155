@@ -40,19 +40,17 @@ class Layer:
         return (self.deltas, self.weights)
     
     def update_weights(self, eta, inputs):
-        n, _ = inputs.shape
-        self.weights = self.weights - eta/n*(inputs.T @ self.deltas)
+        self.weights = self.weights - eta*(inputs.T @ self.deltas)
         return self.weights
 
     def update_biases(self, eta):
-        self.biases = self.biases - eta*np.mean(self.deltas, axis=0)
+        self.biases = self.biases - eta*np.sum(self.deltas, axis=0)
         return self.biases
         
 class FFNN:
     ## Cost function derivatives
     def _mse_derivative(self, A, T):
-        n, _ = A.shape
-        return -2/n*(T - A)
+        return -2*(T - A)
 
     _cost_func_derivatives = {'mse':_mse_derivative}
     
@@ -70,7 +68,7 @@ class FFNN:
         self.layers.append(new_layer)
         return new_layer
                 
-    def train(self, design_matrix, targets, eta=.01, eps=.01, max_iter=10):
+    def train(self, design_matrix, targets, eta=.01, eps=.01, max_iter=100):
         for iteration in range(max_iter):
             inputs = design_matrix
             for layer in self.layers:
