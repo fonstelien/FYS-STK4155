@@ -25,12 +25,8 @@ class SGD:
         n, _ = X.shape
         return 2/n * X.T @ (X @ beta - y) + 2*lmd*beta
 
-    def _grad_cost_function_mse(self, X, y, beta, lmd, *args):
-        n, _ = X.shape
-        return 2/n * X.T @ (X @ beta - y) + 2*lmd*beta
-    
-    _grad_cost_functions = {'ols':_grad_cost_function_ols, 'ridge':_grad_cost_function_ridge, 'mse':_grad_cost_function_mse}
-    
+    _grad_cost_functions = {'ols':_grad_cost_function_ols, 'ridge':_grad_cost_function_ridge}
+
     def __init__(self, epochs, batches, eta0=.01, t0=None, alpha=1., learning_schedule='constant', cost_function='ols'):
         '''Initialize with number of epochs, number of mini batches, eta0, learning_schedule=['constant' | 'optimal' | 'invscaling'], t0 in 'optimal' schedule, cost_function=['ols' | 'ridge' | '']  '''
         self.epochs = epochs
@@ -49,7 +45,7 @@ class SGD:
         self.beta = np.zeros((p,1)) if beta0 is None else beta0
         if (lmd != 0.):
             self.alpha = lmd
-        
+
         schedule_func = self._learning_schedules[self.learning_schedule]
         grad_func = self._grad_cost_functions[self.cost_function]
 
