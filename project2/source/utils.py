@@ -92,7 +92,7 @@ def mse(y, y_tilde):
     return np.mean(np.mean((y - y_tilde)**2, axis=1, keepdims=True))
 
 def r2(y, y_tilde):
-    return 1 - sum((y - np.mean(y_tilde, axis=1, keepdims=True))**2)/sum((y - np.mean(y))**2)
+    return (1 - sum((y - np.mean(y_tilde, axis=1, keepdims=True))**2)/sum((y - np.mean(y))**2))[0]
 
 def bias(f, y_tilde):
     return np.mean((f - np.mean(y_tilde, axis=1, keepdims=True))**2)
