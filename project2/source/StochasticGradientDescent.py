@@ -6,6 +6,7 @@ import sklearn as skl
 class SGD:
     '''Class implementing Stochastic Gradient Descent for cost functions OLS, Ridge, ... on linear and logistic regression problems and classification problems.'''
 
+    ## Learning schedules    
     def _learning_schedule_constant(self, *args):
         return self.eta0
 
@@ -15,8 +16,11 @@ class SGD:
     def _learning_schedule_invscaling(self, t, *args):
         return self.eta0/(t+1)**.5
 
-    _learning_schedules = {'constant':_learning_schedule_constant, 'optimal':_learning_schedule_optimal, 'invscaling':_learning_schedule_invscaling}
+    _learning_schedules = {'constant':_learning_schedule_constant,
+                           'optimal':_learning_schedule_optimal,
+                           'invscaling':_learning_schedule_invscaling}
 
+    ## Cost function gradients    
     def _grad_cost_function_ols(self, X, y, beta, *args):
         n, _ = X.shape
         return 2/n * X.T @ (X @ beta - y)

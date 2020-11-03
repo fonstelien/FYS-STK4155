@@ -5,6 +5,7 @@ import sklearn as skl
 from StochasticGradientDescent import SGD
 
 class Layer:
+    _leaky_relu_f = .01
     
     ## Activation functions and their derivatives
     def _sigmoid(self, z):
@@ -13,9 +14,26 @@ class Layer:
     def _sigmoid_derivative(self, z):
         s = self._sigmoid(z)
         return s*(1-s)
+
+    def _relu(self, z):
+        return np.maximum(0, z)
+
+    def _relu_derivative(self, z):
+        return self._relu(z) / (z + (z == 0))  ## def. deriv. at 0 as 0
+
+    def _leaky_relu(self, z):
+        return np.maximum(self._leaky_relu_f*z, z)
+
+    def _leaky_relu_derivative(self, z):
+        return (z <= 0)*self._leaky_relu_f + (z > 0) ## def. deriv. at 0 as _leaky_relu_f
+
     
-    _activation_funcs = {'sigmoid':_sigmoid}
-    _activation_func_derivatives = {'sigmoid':_sigmoid_derivative}
+    _activation_funcs = {'sigmoid':_sigmoid,
+                         'relu':_relu,
+                         'leaky-relu':_leaky_relu}
+    _activation_func_derivatives = {'sigmoid':_sigmoid_derivative,
+                                    'relu':_relu_derivative,
+                                    'leaky-relu':_leaky_relu_derivative}
     
     def __init__(self, num_nodes, num_inputs, activation_function='sigmoid'):
         np.random.seed(0)
@@ -48,12 +66,8 @@ class Layer:
         return self.biases
         
 class FFNN:
-    ## Cost function derivatives
-    def _mse_derivative(self, A, T):
-        return -2*(T - A)
 
-    _cost_func_derivatives = {'mse':_mse_derivative}
-
+    ## Learning schedules
     def _learning_schedule_constant(self, eta0, *args):
         return eta0
 
@@ -67,6 +81,12 @@ class FFNN:
     _learning_schedules = {'constant':_learning_schedule_constant,
                            'invscaling':_learning_schedule_invscaling,
                            'optimal':_learning_schedule_optimal}
+
+    ## Cost function derivatives
+    def _mse_derivative(self, A, T):
+        return -2*(T - A)
+
+    _cost_func_derivatives = {'mse':_mse_derivative}
     
     def __init__(self, num_features, cost_function='mse'):
         self.num_features = num_features
