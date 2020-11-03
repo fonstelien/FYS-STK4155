@@ -5,47 +5,100 @@ import sklearn as skl
 from StochasticGradientDescent import SGD
 
 class Layer:
-
+    
+    ## Activation functions and their derivatives
     def _sigmoid(self, z):
         return 1/(1 + np.exp(-z))
     
-    def _derivative_sigmoid(self, z):
+    def _sigmoid_derivative(self, z):
         s = self._sigmoid(z)
         return s*(1-s)
-
     
     _activation_funcs = {'sigmoid':_sigmoid}
-    _activation_func_derivatives = {'sigmoid':_derivative_sigmoid}
+    _activation_func_derivatives = {'sigmoid':_sigmoid_derivative}
     
     def __init__(self, num_nodes, num_inputs, activation_function='sigmoid'):
-        self.biases = np.ones((num_nodes, 1))
+        np.random.seed(0)
+        self.num_nodes = num_nodes
+        self.biases = np.zeros(num_nodes) + .01
         self.weights = np.random.rand(num_inputs, num_nodes)
-        self.output_vals = np.ndarray((num_nodes, 1))
-        self.z = np.ndarray((num_nodes, 1))
-        self.deltas = np.ndarray((num_nodes, 1))
         self.activation_function = activation_function
+        self.activation_inputs = None  # matrix (num_samples x num_nodes)
+        self.outputs = None  # matrix (num_samples x num_nodes)
+        self.deltas = None  # matrix (num_samples x num_nodes)
         
-    def feed_forward(self, input_vals):
+    def feed_forward(self, inputs):
         activation_func = self._activation_funcs[self.activation_function]
-        self.z[:,0] = (self.weights.T @ input_vals + self.biases).ravel()
-        self.output_vals[:,0] = (activation_func(self, self.z)).ravel()
-        return self.output_vals
+        self.activation_inputs = inputs @ self.weights + self.biases
+        self.outputs = activation_func(self, self.activation_inputs)
+        return self.outputs
 
-    def back_propagate(self, weights, deltas):
+    def back_propagate(self, cost_derivatives):
         activation_func_derivative = self._activation_func_derivatives[self.activation_function]
-        self.derivatives = activation_func_derivative(self, self.z)
-        self.deltas[:,0] = (self.derivatives.T @ weights @ deltas).ravel()
-        return (self.weights, self.deltas)
-
-    def update_weights(self):
-        pass
-
-    def update_biases(self):
-        pass
+        activation_derivatives = activation_func_derivative(self, self.activation_inputs)
+        self.deltas = cost_derivatives * activation_derivatives
+        return (self.deltas, self.weights)
     
-class FFNN:
+    def update_weights(self, eta, inputs):
+        n, _ = inputs.shape
+        self.weights = self.weights - eta/n*(inputs.T @ self.deltas)
+        return self.weights
 
+    def update_biases(self, eta):
+        self.biases = self.biases - eta*np.mean(self.deltas, axis=0)
+        return self.biases
+        
+class FFNN:
+    ## Cost function derivatives
+    def _mse_derivative(self, A, T):
+        n, _ = A.shape
+        return -2/n*(T - A)
+
+    _cost_func_derivatives = {'mse':_mse_derivative}
+    
     def __init__(self, num_features, cost_function='mse'):
         self.num_features = num_features
+        self.cost_function = cost_function
         self.layers = list()
+
+    def add_layer(self, num_nodes, activation_function='sigmoid'):
+        num_inputs = self.num_features
+        if (len(self.layers) > 0):
+            preceding_layer = self.layers[-1]
+            num_inputs = preceding_layer.num_nodes
+        new_layer = Layer(num_nodes, num_inputs, activation_function)
+        self.layers.append(new_layer)
+        return new_layer
+                
+    def train(self, design_matrix, targets, eta=.01, eps=.01, max_iter=10):
+        for iteration in range(max_iter):
+            inputs = design_matrix
+            for layer in self.layers:
+                inputs = layer.feed_forward(inputs)
+
+            cost_func_derivative = self._cost_func_derivatives[self.cost_function]
+            cost_derivatives = cost_func_derivative(self, inputs, targets)        
+            for layer in reversed(self.layers):
+                deltas, weights = layer.back_propagate(cost_derivatives)
+                cost_derivatives = deltas @ weights.T
+
+            inputs = design_matrix
+            for layer in self.layers:
+                layer.update_weights(eta, inputs)
+                layer.update_biases(eta)
+                inputs = layer.outputs
+
+            # print('outputs\n', layer.outputs)
+            # print('weights\n',layer.weights)
+            # print('biases\n',layer.biases)
+        
+        return layer.outputs
+            
+    def test(self, design_matrix):
+        inputs = design_matrix
+        for layer in self.layers:
+            inputs = layer.feed_forward(inputs)
+        return layer.outputs
+        
+            
         

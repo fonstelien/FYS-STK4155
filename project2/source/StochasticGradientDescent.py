@@ -46,7 +46,7 @@ class SGD:
         '''Runs Stochastic Gradient Descent with inputs to cost function X, y, lmd. Starting point beta0 is set to all-zeros if None. lmd is Ridge's L2 hyperparameter and is used in learning_schedule 'optimal'. The coefficient vector is retrievable for later as self.beta. Returns the coefficient vector.'''
         n, p = X.shape
         n_batch = int(n/self.batches)
-        self.beta = beta0 if beta0 else np.zeros((p,1))
+        self.beta = np.zeros((p,1)) if beta0 is None else beta0
         if (lmd != 0.):
             self.alpha = lmd
         
