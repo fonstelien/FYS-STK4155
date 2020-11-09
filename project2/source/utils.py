@@ -15,7 +15,30 @@ import imageio
 from numba import jit, njit, prange
 
 
-# From the assignment:
+## ==========================================================
+## Below: New methods for Project 2
+
+def onehot(targets, classes):
+    '''Translates 1D targets array with classes=0,1,2,... into a 2D one-hot np.ndarray.'''
+    n = len(targets)
+    hot_targets = np.zeros((n, classes))
+    for r, i in enumerate(targets):
+        hot_targets[r,i] = 1
+    return hot_targets
+
+def softmax(z):
+    '''Returns an nd.ndarray where softmax has been applies on z.'''
+    stability_factor = z.max()
+    e = np.exp(z-stability_factor)
+    return e/np.sum(e, axis=1, keepdims=True)
+
+
+
+## Above: Project 2
+## ==========================================================
+## Below: Project 1
+
+# From assignment 1:
 def FrankeFunction(x,y):
     '''Evaluates the Franke function at x,y'''
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))

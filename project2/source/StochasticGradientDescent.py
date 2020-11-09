@@ -10,54 +10,65 @@ class SGD:
     def _learning_schedule_constant(self, *args):
         return self.eta0
 
-    def _learning_schedule_optimal(self, t, *args):
-        return 1./(self.alpha*(self.t0 + t))
-
     def _learning_schedule_invscaling(self, t, *args):
         return self.eta0/(t+1)**.5
 
+    def _learning_schedule_geron(self, t, *args):
+        return self.eta0/(self.t0 + t)
+    
     _learning_schedules = {'constant':_learning_schedule_constant,
-                           'optimal':_learning_schedule_optimal,
+                           'geron':_learning_schedule_geron,
                            'invscaling':_learning_schedule_invscaling}
 
     ## Cost function gradients    
-    def _grad_cost_function_ols(self, X, y, beta, *args):
-        n, _ = X.shape
-        return 2/n * X.T @ (X @ beta - y)
-
-    def _grad_cost_function_ridge(self, X, y, beta, lmd, *args):
+    def _mse_grad(self, X, y, beta, lmd, *args):
         n, _ = X.shape
         return 2/n * X.T @ (X @ beta - y) + 2*lmd*beta
 
-    _grad_cost_functions = {'ols':_grad_cost_function_ols, 'ridge':_grad_cost_function_ridge}
+    def _cross_entropy_grad(self, X, y, beta, lmd, *args):
+        e = np.exp(X @ beta)
+        mu = e/np.sum(e, axis=1, keepdims=True)
+        n, _ = X.shape        
+        return 1/n * X.T @ (mu - y) + lmd*beta
+    
+    _grad_cost_functions = {'linear':_mse_grad,
+                            'logistic':_cross_entropy_grad}
 
-    def __init__(self, epochs, batches, eta0=.01, t0=None, alpha=1., learning_schedule='constant', cost_function='ols'):
-        '''Initialize with number of epochs, number of mini batches, eta0, learning_schedule=['constant' | 'optimal' | 'invscaling'], t0 in 'optimal' schedule, cost_function=['ols' | 'ridge' | '']  '''
+    def __init__(self, epochs=100, batch_size=100, batches=None, eta0=.01, t0=1, learning_schedule='constant', regression='linear', classes=2):
+        '''Initialize with number of epochs, number of mini batches, eta0, t0 in 'geron' schedule, learning_schedule=['constant' | 'geron' | 'invscaling'], schedule, regression=['linear' | 'logistic'], classes in logistic regression.'''
         self.epochs = epochs
+        self.batch_size = batch_size        
         self.batches = batches
         self.eta0 = eta0
-        self.t0 = t0 if t0 else epochs
-        self.alpha = alpha
+        self.t0 = t0
         self.learning_schedule = learning_schedule
-        self.cost_function = cost_function
+        self.regression = regression
+        self.classes = classes
         self.beta = None
 
     def run(self, X, y, beta0=None, lmd=0.):
         '''Runs Stochastic Gradient Descent with inputs to cost function X, y, lmd. Starting point beta0 is set to all-zeros if None. lmd is Ridge's L2 hyperparameter and is used in learning_schedule 'optimal'. The coefficient vector is retrievable for later as self.beta. Returns the coefficient vector.'''
         n, p = X.shape
-        n_batch = int(n/self.batches)
-        self.beta = np.zeros((p,1)) if beta0 is None else beta0
-        if (lmd != 0.):
-            self.alpha = lmd
+        if self.batches:
+            self.batch_size = int(n/self.batches)
+        else:
+            self.batches = int(n/self.batch_size)
+
+        self.beta = beta0
+        if beta0 is None:
+            if self.regression == 'logistic':
+                self.beta = np.zeros((p,self.classes))                
+            else:
+                self.beta = np.zeros((p,1))
 
         schedule_func = self._learning_schedules[self.learning_schedule]
-        grad_func = self._grad_cost_functions[self.cost_function]
+        grad_func = self._grad_cost_functions[self.regression]
 
         for epoch in range(self.epochs):
             X_shff, y_shff = skl.utils.resample(X, y, replace=False, random_state=epoch)
             for batch in range(self.batches):
-                X_batch = X_shff[batch*n_batch:(batch+1)*n_batch]
-                y_batch = y_shff[batch*n_batch:(batch+1)*n_batch]
+                X_batch = X_shff[batch*self.batch_size:(batch+1)*self.batch_size]
+                y_batch = y_shff[batch*self.batch_size:(batch+1)*self.batch_size]
                 grad = grad_func(self, X_batch, y_batch, self.beta, lmd)
                 eta = schedule_func(self, epoch*self.batches + batch)
                 self.beta = self.beta - eta*grad

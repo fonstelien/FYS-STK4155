@@ -156,7 +156,7 @@ class FFNN:
         
         cost_func_derivative = self._cost_func_derivatives[self.cost_function]
         schedule_func = self._learning_schedules[learning_schedule]
-        
+
         for epoch in range(epochs):
             data_shff, targets_shff = skl.utils.resample(
                 data, targets, replace=False, random_state=epoch)
