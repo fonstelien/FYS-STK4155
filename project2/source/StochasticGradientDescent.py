@@ -46,8 +46,8 @@ class SGD:
         self.classes = classes
         self.beta = None
 
-    def run(self, X, y, beta0=None, lmd=0.):
-        '''Runs Stochastic Gradient Descent with inputs to cost function X, y, lmd. Starting point beta0 is set to all-zeros if None. lmd is Ridge's L2 hyperparameter and is used in learning_schedule 'optimal'. The coefficient vector is retrievable for later as self.beta. Returns the coefficient vector.'''
+    def run(self, X, y, beta0=None, eta0=None, lmd=0.):
+        '''Runs Stochastic Gradient Descent with inputs to cost function X, y, lmd. Starting point beta0 is set to all-zeros if None. L2 regularization factor lmd. The coefficient vector is retrievable for later as self.beta. Returns the coefficient vector as np.ndarray.'''
         n, p = X.shape
         if self.batches:
             self.batch_size = int(n/self.batches)
@@ -61,6 +61,9 @@ class SGD:
             else:
                 self.beta = np.zeros((p,1))
 
+        if eta0:
+            self.eta0 = eta0
+                
         schedule_func = self._learning_schedules[self.learning_schedule]
         grad_func = self._grad_cost_functions[self.regression]
 

@@ -3,7 +3,7 @@
 from utils import *
 
 
-def run_ridge_kfold(X, z, SGD, k=10, polynomial_orders=[], lambdas=[]):
+def run_ridge_kfold(X, z, SGD, k=5, polynomial_orders=[], lambdas=[]):
     '''Performs Ridge regression with k-fold resampling on X, z. Returns DataFrame with columns=["lambda", "train_mse", "test_mse"]'''
 
     ridge_k_df = DataFrame()
@@ -27,9 +27,6 @@ def run_ridge_kfold(X, z, SGD, k=10, polynomial_orders=[], lambdas=[]):
                 z_test = z[test_split]
 
                 X_train, X_test = scale(X_train, X_test)
-
-                # L = lmd*np.identity(X_train.shape[1])
-                # beta_hat = np.linalg.inv(X_train.T @ X_train + L) @ X_train.T @ z_train
 
                 beta_hat = SGD.run(X_train, z_train, lmd=lmd)
                 

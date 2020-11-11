@@ -27,11 +27,22 @@ def onehot(targets, classes):
     return hot_targets
 
 def softmax(z):
-    '''Returns an nd.ndarray where softmax has been applies on z.'''
+    '''Returns an np.ndarray where softmax has been applies on z.'''
     stability_factor = z.max()
     e = np.exp(z-stability_factor)
     return e/np.sum(e, axis=1, keepdims=True)
 
+
+def scale(X_train, X_test, scale_intercept=False, **kwargs):
+    '''Wrapper for skl.preprocessing.StandardScaler. **kwargs are forwarded to StandardScaler'''
+    scaler = skl.preprocessing.StandardScaler(**kwargs)
+    scaler.fit(X_train)
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+    if not scale_intercept:
+        X_train[:,0] = 1
+        X_test[:,0] = 1
+    return (X_train, X_test)
 
 
 ## Above: Project 2
@@ -149,17 +160,6 @@ def truncate_to_poly(X, pn):
     '''Truncates the design matrix X to right shape for polynomial degree pn'''
     p = int((pn+1)*(pn+2)/2)
     return np.copy(X[:,:p])
-
-def scale(X_train, X_test, **kwargs):
-    '''Wrapper for skl.preprocessing.StandardScaler. **kwargs are forwarded to StandardScaler'''
-    scaler = skl.preprocessing.StandardScaler(**kwargs)
-    scaler.fit(X_train)
-    X_train = scaler.transform(X_train)
-    X_test = scaler.transform(X_test)
-    X_train[:,0] = 1
-    X_test[:,0] = 1
-    return (X_train, X_test)
-
 
 def split(y, k):
     '''k-fold splitter function. NOTE: Choose k such that len(z)%k is zero, ie the split is even!'''
