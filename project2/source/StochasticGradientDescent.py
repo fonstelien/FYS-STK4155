@@ -34,8 +34,8 @@ class SGD:
     _grad_cost_functions = {'linear':_mse_grad,
                             'logistic':_cross_entropy_grad}
 
-    def __init__(self, epochs=100, batch_size=100, batches=None, eta0=.01, t0=1, learning_schedule='constant', regression='linear', classes=2):
-        '''Initialize with number of epochs, number of mini batches, eta0, t0 in 'geron' schedule, learning_schedule=['constant' | 'geron' | 'invscaling'], schedule, regression=['linear' | 'logistic'], classes in logistic regression.'''
+    def __init__(self, epochs=100, batch_size=100, batches=None, eta0=.01, t0=1, learning_schedule='constant', regression='linear'):
+        '''Initialize with number of epochs, number of mini batches, eta0, t0 in 'geron' schedule, learning_schedule=['constant' | 'geron' | 'invscaling'], schedule, regression=['linear' | 'logistic'].'''
         self.epochs = epochs
         self.batch_size = batch_size        
         self.batches = batches
@@ -43,12 +43,12 @@ class SGD:
         self.t0 = t0
         self.learning_schedule = learning_schedule
         self.regression = regression
-        self.classes = classes
         self.beta = None
 
     def run(self, X, y, beta0=None, eta0=None, lmd=0.):
         '''Runs Stochastic Gradient Descent with inputs to cost function X, y, lmd. Starting point beta0 is set to all-zeros if None. L2 regularization factor lmd. The coefficient vector is retrievable for later as self.beta. Returns the coefficient vector as np.ndarray.'''
         n, p = X.shape
+
         if self.batches:
             self.batch_size = int(n/self.batches)
         else:
@@ -57,7 +57,8 @@ class SGD:
         self.beta = beta0
         if beta0 is None:
             if self.regression == 'logistic':
-                self.beta = np.zeros((p,self.classes))                
+                _, classes = y.shape
+                self.beta = np.zeros((p,classes))                
             else:
                 self.beta = np.zeros((p,1))
 

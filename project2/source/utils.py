@@ -26,6 +26,13 @@ def onehot(targets, classes):
         hot_targets[r,i] = 1
     return hot_targets
 
+def add_intercept(X):
+    '''Adds intercept column (a column of 1s) to 2D np.ndarray X'''
+    n, _ = X.shape
+    intercept = np.ones((n,1))
+    X = np.hstack((intercept, X))
+    return X    
+
 def softmax(z):
     '''Returns an np.ndarray where softmax has been applies on z.'''
     stability_factor = z.max()
