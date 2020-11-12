@@ -58,7 +58,7 @@ In \cite{project1} we studied linear regression methods. We saw that for the Ord
 
 The Stochastic Gradient Descent method (SGD) deals with both of these problems. It still requires calculating $\mathbf{X}^\intercal \mathbf{X}$, but since it determines the coefficient estimates $\mathbf{\hat{\beta}}$ iteratively on so-called \textit{mini batches} which can be kept in the higher levels of cache, the operation becomes less computationally demanding. The inversion operation is avoided all-together. 
 
-SGD is useful in other methods as well. SGD can be used in logistic regression methods, which lets us solve \textit{classification problems} where we predict the outcome of an event as the one most likely of several possible \textit{classes} of outcomes. For these problems, linear regression methods are unsuitable. Logistic regression again is unsuitable for the class of problems where the decision boundary between features and outcomes is non-linear, like the exclusive or (XOR). For these problems, Artificial Neural Networks (ANNs) can be used.
+SGD is useful in other methods as well. SGD can be used in logistic regression methods, which lets us solve \textit{classification problems} where we predict the outcome of an event as the one most likely of several possible \textit{classes} of outcomes. For these problems, linear regression methods are unsuitable. Logistic regression again is unsuitable for the class of problems where the decision boundary between features and outcomes is non-linear, like the \textit{XOR} (exclusive or) logical operator. For these problems, Artificial Neural Networks (ANNs) can be used.
 
 In this report we will ....
 
@@ -99,6 +99,8 @@ Finding the \textit{best} $\eta = \hat{\eta}$, such that $\mathbf{\beta}^{(i+1)}
 \end{equation}
 However, the cost function $\mathcal{C}(\mathbf{\beta})$ is guaranteed to be convex for linear and logistic regression problems, implying a positive definite $\mathbf{H}$ \cite{murphy2012machine}. Therefore, as long as we select $\eta < 2/\lambda_{max}$, where $\lambda_{max}$ is the largest eigenvalue of the Hessian matrix, Equation (\ref{newton-raphson-eta}) will converge towards $\mathbf{\hat{\beta}}$. Again, $\lambda_{max}$ will remain unknown to us; but knowing that if we select a $\eta$ which is not too large, a solution will be found, we base our approach on trial and error. 
 
+\vspace{5mm}
+
 The next problem then becomes to decide when to stop the search for $\mathbf{\hat{\beta}}$. One solution is to stop when the difference between the iterations becomes smaller than some defined value, $||\mathbf{\beta}^{(n+1)} - \mathbf{\beta}^{(n)}||_2 \le \varepsilon$. Another, which we will use here, is simply to define a number of iterations, and extract the solution thereafter. This might seem a little inaccurate, maybe, but works well since the direction of $\mathbf{g}$ is always towards the global minimum, and $|\mathbf{g}| \rightarrow 0$ when $\mathbf{\beta} \rightarrow \mathbf{\hat{\beta}}$, which means that if we come close to $\mathbf{\hat{\beta}}$, the final approximation $\mathbf{\beta}^{(final)} \approx \mathbf{\hat{\beta}}$.
 
 A further refinement to this is to incrementally decrease $\eta$ for each iteration towards $\mathbf{\hat{\beta}}$; that is to let $\eta \rightarrow \eta^{(i)} = f(i)$, such that $\eta^{(i+1)} < \eta^{(i)}$. This increases the stability of the method since it allows us to even have $\eta^{(0)} > 2/\lambda_{max}$ and still get convergence.
@@ -113,6 +115,8 @@ and another one suggested by Geron in \cite{geron2019hands};
 \end{equation}
 Here the factors $k, t_0, t_1$ are user defined. Figure \ref{fig:learning_schedules} shows each learning schedule with some selections for the user-defined factors over the 100 first iterations.
 
+\vspace{5mm}
+
 Calculating the gradient of the cost function $\mathbf{g}$ in Equation (\ref{newton-raphson-eta}) may prove computationally demanding if the data set is large. The gradient of the logistic regression method cost function, for instance, would require that we calculate the matrix product $\mathbf{X}^\intercal \mathbf{P}$ in each iteration. In SGD, we select a subset of the samples by a stochastic process, and calculated an approximated gradient based on this subset or mini batch. The standard deviation of the gradient's expectation value relative to the number of samples $n$ follows the relation \cite{fys-stk4155-notes}
 \begin{equation}
 	\sigma_g \sim \frac{1}{\sqrt{n}},
@@ -121,7 +125,11 @@ which means that if we collect a mini batch of 100 from a data set of 1000 sampl
 
 Another great advantage of only approximating the gradient on a mini sample is the decreased risk of getting stuck in a local minimum or saddle point, where $\mathbf{g} \rightarrow 0$, but $\mathbf{\beta} \neq \mathbf{\hat{\beta}}$. This is especially useful in neural network applications, where it is not given that we have a convex cost function.
 
-The implementation of SGD is outlined in Listing \ref{lst:sgd}. An \lstinline|epoch| is defined as a full run through the full set of samples. The \lstinline|learning_schedule()|s could be as in Equations (\ref{invscaling}) and (\ref{geron}). The \lstinline|cost_function_gradient()|s that we will use in this report are Mean Square Error (MSE), used in OLS and Ridge regression methods; and Cross Entropy (CE), used in the logistic regression method. MSE cost function gradient is given by
+The implementation of SGD is outlined in Listing \ref{lst:sgd}. An \lstinline|epoch| is defined as a full run through the full set of samples. The \lstinline|learning_schedule()|s could be as in Equations (\ref{invscaling}) and (\ref{geron}). 
+
+\vspace{5mm}
+
+The \lstinline|cost_function_gradient()|s that we will use in this report are Mean Squared Error (MSE), used in OLS and Ridge regression methods; and Cross Entropy (CE), used in the logistic regression method. MSE cost function gradient is given by
 \begin{equation} \label{cost-mse}
 	\mathbf{g}_{mse}^{(n)} = \frac{\partial \mathcal{C}_{mse}^{(n)}}{\partial \mathbf{\beta}} = \frac{1}{n} (\mathbf{X}^\intercal \mathbf{X}) \mathbf{\beta}^{(n)} - \mathbf{X}^\intercal \mathbf{y} + \lambda \mathbf{\beta}^{(n)},
 \end{equation}
@@ -146,6 +154,8 @@ Each element $p_{ij}$ in $\mathbf{P}$ is given by
 \end{equation}
 and the sum of each row $\mathbf{p}_i$ in $\mathbf{P}$ is 1; $\sum_{j} p_{ij} = 1$.
 
+\vspace{5mm}
+
 In Figure \ref{fig:demo_lin_log_reg} we see a demonstration on some mock-up cases for each of the regression methods OLS and Rdge with SGD, and logistic with SGD. For the linear regression cases, a simple linear function with some noise has been used; $y_i = 1 + 2x_i + \varepsilon_i$, where $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.75^2)$, and samples $n=100$. We see that both methods make the fit quite well after 20 epochs and 10 mini batches with constant learning schedule with $\eta = 0.5$ for OLS and $\eta = 0.7, \lambda=0.1$ for Ridge.
 
 The logistic regression classification problem mock-up is shown in Table \ref{tab:logreg-demo}. The design matrix $\mathbf{X}'$ is generated by adding some noise to an identity matrix of dimension $3 \times 3$, and adding the intercepts. Each of the three cases represent distinct outcomes, $\mathbf{Y}$. To the right in Figure \ref{fig:demo_lin_log_reg} we see that when we use the result of the logistic regression $\mathbf{B}$ to fit to $\mathbf{X}'$, correct outcomes are predicted with high confidence in each case.
@@ -164,32 +174,37 @@ The logistic regression classification problem mock-up is shown in Table \ref{ta
 	\label{fig:demo_lin_log_reg}
 \end{figure}
 
-\begin{lstlisting}[caption={Stochastic Gradient Descent algorithm. Cost function gradients and learning schedules may be defined independently of the implementation of SGD. This implementation runs for \lstinline|epochs*batches| iterations, and does not sense if or when it converges.},label={lst:sgd}] [!ht]
-	// Declarations
-	betas = "initial coefficient values"
-	epochs = "number of runs through data set"
-	batches = "number of mini batches"
-	iteration_number = 0
-
-	// SGD process	
-	FOR i = 1...epochs DO
-		shuffle(data, targets)
-		FOR j = 1...batches DO
-			data_batch, targets_batch = "draw mini batch from full set w/o replacement"
-			iteration_number++
-			eta = learning_schedule(iteration_number, args...)
-			grad = cost_function_gradient(data_batch, targets_batch)
-			betas = betas - eta*grad
+\begin{minipage}{\linewidth}
+	\begin{lstlisting}[caption={Stochastic Gradient Descent algorithm. Cost function gradients and learning schedules may be defined independently of the implementation of SGD. This implementation runs for \lstinline|epochs*batches| iterations, and does not sense if or when it converges.},label={lst:sgd}] [!ht]
+		// Declarations
+		betas = "initial coefficient values"
+		epochs = "number of runs through data set"
+		batches = "number of mini batches"
+		iteration_number = 0
+		
+		// Inputs
+		data = "the design matrix"
+		targets = "the response variables"
+	
+		// SGD process	
+		FOR i = 1...epochs DO
+			shuffle(data, targets)
+			FOR j = 1...batches DO
+				data_batch, targets_batch = "draw mini batch from full set w/o replacement"
+				iteration_number++
+				eta = learning_schedule(iteration_number, args...)
+				grad = cost_function_gradient(data_batch, targets_batch)
+				betas = betas - eta*grad
+			END FOR
 		END FOR
-	END FOR
-\end{lstlisting}
-
+	\end{lstlisting}
+\end{minipage}
 
 \begin{table}[!ht]
 	\caption{Mock-up classification problem for demonstration of logistic regression. The table has three cases or samples 1,2,3, which are represented with the design matrix $\mathbf{X}'$ in the middle and the one-hot response variable matrix $\mathbf{Y}$ to the right. See the result of the demo to the right in Figure \ref{fig:demo_lin_log_reg}.}
 	\label{tab:logreg-demo}
 	\begin{center}
-		\begin{tabular}{l|rrrr|rrr}
+		\begin{tabular}{r|rrrr|rrr}
 			\toprule
 			case &  intercept &     $p_1$ &     $p_2$ &     $p_3$ &  class 1 &  class 2 &  class 3 \\
 			\midrule
@@ -202,12 +217,192 @@ The logistic regression classification problem mock-up is shown in Table \ref{ta
 \end{table}
 
 
-%of the of size $m = n/M$, 
-
-
-\subsection{Logistic Regression}
-
 \subsection{Feed-Forward Neural Network}
+The linear and logistic regression methods each have their well-defined set of problems where they come to use; regression and classification, respectively. Artificial Neural Networks is another method, which is can be used for both types of problems, including classification problems with non-linear decision boundaries, like the XOR logical operator, or binary number representation. In this report we study a type of ANN called Feed-Forward Neural Network (FFNN).
+
+Figure \ref{fig:ann-illustration} gives an illustration of a typical FFNN. The layers consist of one or more \textit{nodes} with a \textit{activation function}. Each node-to-node connection has a \textit{weight}, and the input to each node's activation function is the weighted sum of the inputs from all the nodes in the former layer, plus a node-specific \textit{bias}. Except for in the input layer, where the design matrix $\mathbf{X}$ is fed in, all the activation functions are non-linear. This gives the network a highly non-linear behavior. The output of the first hidden layer is thus a non-linear transformation of the information in the input layer, and this process is repeated in the succeeding layers, including the output. At the output layer, the output is evaluated against a suitable cost function, and the error is back-propagated up through the network, which regulates the incremental update of weights and biases. This \textit{training} process is then repeated for a given number of times, or until we have convergence.
+
+\vspace{5mm}
+
+The following derivation is in large part based on \cite{fys-stk4155-notes}, and the reader is encouraged to refer to this for a thorough outline.
+
+As indicated above, the input layer in our FFNN does not have an activation function, it only passes the design matrix $\mathbf{X}$ on to the first hidden layer. If we let $\mathbf{X} \in \mathbb{R}^{n \times p}$, the input layer will have $p$ nodes which are all connected to the $m$ nodes of layer 1, the first hidden layer. Layer 1's weight matrix $\mathbf{W}_1 \in \mathbb{R}^{p \times m}$ is then given as
+\begin{equation}
+	\mathbf{W}_1 = 
+	\left[\begin{array}{cccc}
+		w_{11} &w_{12} & \cdots &w_{1m} \\
+		w_{21} &w_{22} & \cdots &w_{2m} \\
+		\vdots &\vdots &\vdots  &\vdots \\ 
+		w_{p1} &w_{p2} & \cdots &w_{pm} \\
+	\end{array} \right]_{(1)},
+\end{equation} 
+and its biases are
+\begin{equation}
+	\mathbf{b}_1 = [b_1 \quad b_2 \quad \cdots \quad b_m]_{(1)}.
+\end{equation}
+The resulting inputs $\mathbf{Z}_1$ to layer 1's activation function $f_1$ then become
+\begin{equation} \label{inputs}
+	\mathbf{Z}_1 = \mathbf{X} \mathbf{W}_1 + \mathbf{B}_1, \quad \text{where} \quad \mathbf{Z}_1, \mathbf{B}_1 \in \mathbb{R}^{n \times m}.
+\end{equation}
+Here, $\mathbf{B}_1$ is the bias matrix; an $n \times m$ matrix with $\mathbf{b}_1 \in \mathbb{R}^m$ repeated in all its $n$ rows.
+
+Layer 1's activation function output $\mathbf{A}_1$ is given by
+\begin{equation} \label{outputs}
+	\mathbf{A}_1 = f_1(\mathbf{Z}_1) \in \mathbb{R}^{n \times m},
+\end{equation}
+which is fed into the preceding layer, where this process is repeated. Here we note that this output $\mathbf{A}_1$ is a non-linear transformation of the input $\mathbf{X}$ to the network, which is true also for the remaining layers, including the output layer.
+
+\vspace{5mm}
+
+Let $L$ denote the output layer in our FFNN and $\cal{C}(\mathbf{\theta})$ the cost function of out model, where $\mathbf{\theta}$ may be any variable which influences its value. We evaluate the output of our FFNN against this cost function and update the output layer's weights and biases according to the gradient of the cost function with respect to each set of variables $\mathbf{W}_L, \mathbf{b}_L$;
+\begin{equation} \label{wb-update}
+\begin{aligned}
+		\mathbf{W}_L &\leftarrow \mathbf{W}_L - \eta \frac{\partial \mathcal{C}}{\partial \mathbf{W}_L} \\
+		\mathbf{b}_L &\leftarrow \mathbf{b}_L - \eta \frac{\partial \mathcal{C}}{\partial \mathbf{b}_L} \\
+\end{aligned},
+\end{equation}
+where $\eta$ is the learning rate, a hyperparameter.
+
+By the chain rule, it can be shown that
+\begin{equation} \label{hadamard}
+\begin{aligned}
+	\frac{\partial \mathcal{C}}{\partial \mathbf{W}_L} &= 
+	\mathbf{A}_{L-1}^\intercal \left(\frac{\partial \mathcal{C}}{\partial \mathbf{A}_L} \circ \frac{df_L}{d\mathbf{Z}_L} \right) \\
+	\frac{\partial \mathcal{C}}{\partial \mathbf{b}_L} &= 
+	\frac{\partial \mathcal{C}}{\partial \mathbf{A}_L} \circ \frac{df_L}{d\mathbf{Z}_L} \\
+\end{aligned},
+\end{equation}
+where $\circ$ denotes the element-wise Hadamard product. Here we will let $\mathbf{\Delta}_L$ denote this Hadamard product or error term in Equation (\ref{hadamard});
+\begin{equation} \label{delta-L}
+	\mathbf{\Delta}_L = \frac{\partial \mathcal{C}}{\partial \mathbf{A}_L} \circ \frac{df_L}{d\mathbf{Z}_L}.
+\end{equation}
+Equation (\ref{wb-update}) now becomes
+\begin{equation}
+\begin{aligned}
+	\mathbf{W}_L &\leftarrow \mathbf{W}_L - \eta \mathbf{A}_{L-1}^\intercal \mathbf{\Delta}_L \\
+	\mathbf{b}_L &\leftarrow \mathbf{b}_L - \eta \mathbf{\Delta}_L \\
+\end{aligned}.
+\end{equation}
+
+The preceding layers up to but not including the input are then updated in a similar fashion by back-propagation of this error up through the network. Again by the chain rule, it can be shown that $\mathbf{\Delta}_{L-1}$ is given by
+\begin{equation}
+	\mathbf{\Delta}_{L-1} = (\mathbf{\Delta}_L \mathbf{W}_L^\intercal) \circ \frac{df_{L-1}}{d\mathbf{Z}_{L-1}}.
+\end{equation}
+For the general layer $l \ge 1$, $\mathbf{\Delta}_l$ becomes
+\begin{equation} \label{update-deltas}
+	\mathbf{\Delta}_{l} = (\mathbf{\Delta}_{l+1} \mathbf{W}_{l+1}^\intercal) \circ \frac{df_l}{d\mathbf{Z}_l},
+\end{equation}
+and the rule for updating layer $l$'s weights and biases becomes
+\begin{equation} \label{update-weights-biases}
+\begin{aligned}
+	\mathbf{W}_l &\leftarrow (1 - \eta \lambda) \mathbf{W}_l - \eta \mathbf{A}_{l-1}^\intercal \mathbf{\Delta}_l \\
+	\mathbf{b}_l &\leftarrow \mathbf{b}_l - \eta \mathbf{\Delta}_l \\
+\end{aligned}.
+\end{equation}
+Here, we have added $\lambda$, the $L_2$ regularization parameter, which follows by the cost function derivation with respect to $\mathbf{W}_L$;
+\begin{equation}
+	\mathcal{C}' = \mathcal{C} + \frac{\lambda}{2} ||\mathbf{W}_L||_2^2 \rightarrow \frac{\partial \mathcal{C}'}{\partial \mathbf{W}_L} = \frac{\partial \mathcal{C}}{\partial \mathbf{W}_L} + \lambda \mathbf{W}_L.
+\end{equation}
+
+\vspace{5mm}
+
+Like for the Stochastic Gradient Descent method discussed in the previous section, the ANN training process is then repeated until convergence, when $||\mathcal{C}(\mathbf{\theta})||_2 \le \varepsilon$, or for a defined number of times, which we will do in this report.
+
+\vspace{5mm}
+
+Neural networks are generally data hungry \cite{fys-stk4155-notes}, so to make the ANN training process as efficient as possible, we will use the Stochastic Gradient Descent method here as well. This only involves putting the training process inside the double epochs-batches loop in Listing \ref{lst:sgd}. An outline of the training process is given in Listing \ref{lst:ann-training}.
+
+\vspace{5mm}
+
+The \lstinline|activation_function()|s and \lstinline|activation function_derivative()|s in Listing \ref{lst:ann-training} are very simple non-linear functions. Many types and variants for each type exist, but in this project we limit ourselves to those listed in Table \ref{tab:activation-funcs}, with shapes as shown in Figure XX.
+
+The \lstinline|cost_function_derivative()|s in Listing \ref{lst:ann-training} which we will use in this report are the derivatives with respect to the outputs $\mathbf{A}_L$ of the Mean Squared Error cost function (MSE) and the Cross Entropy cost function (CE). The MSE derivative is given by
+\begin{equation}
+	\frac{\partial \mathcal{C}_{mse}}{\partial \mathbf{A}_L} = (\mathbf{A}_L - \mathbf{Y}),
+\end{equation}
+and the CE derivative by
+\begin{equation} \label{ce-partial}
+	\frac{\partial \mathcal{C}_{ce}}{\partial a_L^{(ij)}} = \frac{a_L^{(ij)} - y^{(ij)}}{a_L^{(ij)} (a_L^{(ij)} - y^{(ij)})}.
+\end{equation}
+Equation (\ref{ce-partial}) is due to \cite{fys-stk4155-notes}.
+
+
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ann-illustration.jpeg}
+	\caption{ANN with one input layer, two hidden layers, and an output layer. The design matrix is fed into the input layer, and is fed through the hidden layers and the output layer value is evaluated against a cost function. The error is then back-propagated and regulates the adjustment of the weights associated with each node-to-node connection and the bias of each node are in order to make a better fit in the next iteration. To introduce non-linearity, the output of each node is decided by the inputs and bias fed into a non-linear activation function. This network could be used for either regression, or binary classification. Illustration borrowed from \cite{fys-stk4155-notes}.}
+	\label{fig:ann-illustration}
+\end{figure}
+
+%\begin{minipage}{\linewidth}
+	\begin{lstlisting}[caption={Outline of the Feed-Forward Neural Network training process using a Stochastic Gradient Descent scheme. The weights and biases in each layer must be initiated with some value.},label={lst:ann-training},escapeinside={@}{@}] [!t]
+	// Declarations
+	layers = "collection of layers in the FFNN"
+	epochs = "number of runs through data set"
+	batches = "number of mini batches"
+	iteration_number = 0
+	lmd = "L2 regularization parameter"
+	
+	// Inputs
+	data = "the design matrix"
+	targets = "the response variables"
+	
+	// SGD learning process
+	FOR i = 1...epochs DO
+		shuffle(data, targets)
+		FOR j = 1...batches DO
+			data_batch, targets_batch = "draw mini batch from full set w/o replacement"
+			
+			// Feed forward
+			layer_outputs = data_batch			
+			FOR EACH layer IN layers DO
+				"set layer's inputs by @Equation (\ref{inputs})@"
+				"set layer's outputs by activation_function() @Equation (\ref{outputs})@"
+			END FOR EACH
+			
+			// Calculate the cost function derivative with respect to output
+			// layer outputs and targets
+			error = cost_function_derivative("output layer's output", targets_batch)
+			
+			// Back-propagate the error by @Equations (\ref{delta-L}) and (\ref{update-deltas})@
+			FOR EACH layer IN REVERSED(layers) DO
+				"set layer's activation function_derivative() with respect to its inputs"
+				"set layer's deltas by the back-propagated error"
+				error = "error to back-propagate error by this layer's new delta and weights"
+			END FOR EACH		
+			
+			// Update weigths and biases
+			iteration_number++
+			eta = learning_schedule(iteration_number, args...)
+			FOR EACH layer IN layers DO
+				"update layer's weights by @Equation (\ref{update-weights-biases})@ with step eta, reg. lmd"
+				"update layer's biases by @Equation (\ref{update-weights-biases})@ with step eta"
+			END FOR EACH
+		END FOR
+	END FOR
+	\end{lstlisting}
+%\end{minipage}
+
+
+\begin{table}[!ht]
+	\caption{Various activation functions and their derivatives. More variants and types exist, but these are the ones used in this report. ReLU, leaky-ReLU and unit-step derivatives are not defined at $z=0$, but we approximate them as 0 here. Also, the derivative of unit-step is of course always 0, but to progress the learning process it is defined as shown here. The unit-step is usually best suited for classification problems, and softmax especially for multinomial classification. For linear regression problems, sigmoid or one of the ReLUs can be used.}
+	\label{tab:activation-funcs}
+	\begin{center}
+		\begin{tabular}{l|l|l|l}
+			\toprule
+			name&	$f(z)$&	$f'(z)$&	asymptote \\
+			\midrule
+			ReLU&	$\mathrm{max}(0,z)$&	1 if $z > 0$; 0 else&	$0,+\infty$ \\
+			leaky-ReLU&	$\mathrm{max}(0.01z,z)$&	1 if $z > 0$; 0.01 else&	$-\infty,+\infty$ \\
+			unit-step&	1 if $z > 0$; 0 else&	set to 1 if $z > 0$; 0 else&	$0,+1$ \\
+			sigmoid&	$1/(1 + e^{-z})$&	$\mathrm{sigmoid}(z)(1 - \mathrm{sigmoid}(z))$	&	$0,+1$ \\
+			softmax&	$e^{z_{ij}}/\sum_{c}e^{z_{ic}}$&	$\mathrm{softmax}(z_{ij})(1 - \mathrm{softmax}(z_{ij}))$ &	$0,+1$ \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+\end{table}
+
 
 \clearpage
 \section{Results} \label{results}

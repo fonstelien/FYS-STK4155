@@ -57,11 +57,13 @@ class Layer:
                                     'softmax':_softmax_derivative,
                                     'unit-step':_unit_step_derivative}
     
-    def __init__(self, num_nodes, num_inputs, activation_function='sigmoid'):
-        '''Initialize with number of nodes in the layer and number of inputs to each node from preceding layer; activation_function=['sigmoid' | 'relu' | 'leaky-relu' | 'softmax' | 'unit-step']'''
+    def __init__(self, num_nodes, num_inputs, activation_function='sigmoid', init_biases=None, init_weights=None):
+        '''Initialize with number of nodes in the layer and number of inputs to each node from preceding layer; activation_function=['sigmoid' | 'relu' | 'leaky-relu' | 'softmax' | 'unit-step']. Some default initial biases and weights are used if init_biases and init_weights are None.'''
         self.num_nodes = num_nodes
         self.num_inputs = num_inputs
         self.activation_function = activation_function
+        self.init_biases = init_biases
+        self.init_weights = init_weights
         self.biases = None
         self.weights = None
         self.reset()  # initialize biases, weights
@@ -72,8 +74,15 @@ class Layer:
     def reset(self):
         '''Resets layer to initial untrained state.'''
         np.random.seed(0)
-        self.biases = np.zeros(self.num_nodes) + .01
-        self.weights = np.random.rand(self.num_inputs, self.num_nodes)
+        if self.init_biases:
+            self.biases = self.init_biases
+        else:
+            self.biases = np.zeros(self.num_nodes) + .01
+
+        if self.init_weights:
+            self.weights = self.init_weights
+        else:
+            self.weights = np.random.rand(self.num_inputs, self.num_nodes)
     
     def feed_forward(self, inputs):
         '''Feed-forward step for layer on the inputs given as argument. Returns the output of this layer.'''
@@ -135,13 +144,14 @@ class FFNN:
         self.cost_function = cost_function
         self.layers = list()
 
-    def add_layer(self, num_nodes, activation_function='sigmoid'):
-        '''Instantiates and appends to the FFNN a layer from the Layer class with num_nodes nodes and activation_function=['sigmoid' | 'relu' | 'leaky-relu' | 'softmax' | 'unit-step']'''
+    def add_layer(self, num_nodes, activation_function='sigmoid', init_biases=None, init_weights=None):
+        '''Instantiates and appends to the FFNN a layer from the Layer class with num_nodes nodes and activation_function=['sigmoid' | 'relu' | 'leaky-relu' | 'softmax' | 'unit-step']. Some default biases and weights defined in Layer class are used if init_biases and init_weights are None.'''
         num_inputs = self.num_features
         if (len(self.layers) > 0):
             preceding_layer = self.layers[-1]
             num_inputs = preceding_layer.num_nodes
-        new_layer = Layer(num_nodes, num_inputs, activation_function)
+        new_layer = Layer(num_nodes, num_inputs, activation_function=activation_function,
+                          init_biases=init_biases, init_weights=init_weights)
         self.layers.append(new_layer)
         return new_layer
     
