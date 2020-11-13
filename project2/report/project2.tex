@@ -133,7 +133,7 @@ The implementation of SGD is outlined in Listing \ref{lst:sgd}. An \lstinline|ep
 
 The \lstinline|cost_function_gradient()|s that we will use in this report are Mean Squared Error (MSE), used in OLS and Ridge regression methods; and Cross Entropy (CE), used in the logistic regression method. MSE cost function gradient is given by
 \begin{equation} \label{cost-mse}
-	\mathbf{g}_{mse}^{(n)} = \frac{\partial \mathcal{C}_{mse}^{(n)}}{\partial \mathbf{\beta}} = \frac{1}{n} (\mathbf{X}^\intercal \mathbf{X}) \mathbf{\beta}^{(n)} - \mathbf{X}^\intercal \mathbf{y} + \lambda \mathbf{\beta}^{(n)},
+	\mathbf{g}_{mse}^{(n)} = \frac{\partial \mathcal{C}_{mse}^{(n)}}{\partial \mathbf{\beta}} = \frac{1}{n} ((\mathbf{X}^\intercal \mathbf{X}) \mathbf{\beta}^{(n)} - \mathbf{X}^\intercal \mathbf{y}) + \lambda \mathbf{\beta}^{(n)},
 \end{equation}
 where $\mathbf{y}$ is the response variable vector and $\lambda$ is the $L_2$ regularization parameter \cite{project1}. 
 
@@ -429,13 +429,71 @@ Classification is done on the 3-class problem described in Table \ref{tab:logreg
 % - An eventual reader should be able to reproduce your calculations if she/he wants to do so. All input variables should be properly explained.
 % - Make sure that figures and tables should contain enough information in their captions, axis labels etc so that an eventual reader can gain a first impression of your work by studying figures and tables only.
 
+In this section we will look at how the methods that we developed in the previous section perform on various types of problems. First we will investigate polynomial regression with the OLS and Ridge methods using SGD to see how the choice of various hyperparameters like epochs, mini batch size, $L_2$ regularization, learning rates and learning schedules influence the generated model. For this we will use samples of the Franke function, which is studied in great detail in \cite{project1}. Then we will move on to logistic regression with SGD, and study both binomial and multinomial classification problems, more specifically the a version of the famous MNIST dataset of handwritten figures 0 to 9, and the equally famous Wisconsin Breast Cancer data set.
+
+For the Feed-Forward Neural Network we will study its performance on all of these problems, with varying activation functions, cost functions and hyperparameters.
+
+All code is written in Python, with extensive use of the \lstinline|numpy| and \lstinline|sklearn| modules.
+
 \subsection{Stochastic Gradient Descent: Linear Regression}
 %Perform an analysis of the results for OLS and Ridge regression as function of the chosen learning rates, the number of mini-batches and epochs as well as algorithm for scaling the learning rate.
 
+Stochastic Gradient Descent for linear regression introduces the a new set of hyperparameters which all have different influence on the gradient descent process. We must define number of epochs, size of mini batches, learning rates and learning schedules. In the Ridge regression method we also have the $L_2$ regularization parameter $\lambda$. In the following we will study their influence on the fit of a polynomial in two variables $p_n(x,y)$ to the Franke function, which is given by
+\begin{equation}
+\label{franke}
+	\begin{aligned}
+		f(x,y) &= \frac{3}{4}\exp{\left(-\frac{(9x-2)^2}{4} - \frac{(9y-2)^2}{4}\right)}+\frac{3}{4}\exp{\left(-\frac{(9x+1)^2}{49}- \frac{(9y+1)}{10}\right)} \\
+		&+\frac{1}{2}\exp{\left(-\frac{(9x-7)^2}{4} - \frac{(9y-3)^2}{4}\right)} -\frac{1}{5}\exp{\left(-(9x-4)^2 - (9y-7)^2\right) },
+	\end{aligned}
+\end{equation}
+where we have also added some noise $\epsilon \sim \mathcal{N}(0, \sigma^2)$. Every sample is thus
+\begin{equation}
+	z_i = f(x_i, y_i) + \epsilon_i
+\end{equation}
+See \cite{project1} for details about random sampling and the design matrix for polynomial fit in two variables.
 
+Figure \ref{fig:ols_sgd} shows the test MSEs with increasing model complexity for OLS solved with SGD. The blue-shaded area in the bottom of each pane indicates the noise $\epsilon$ in the Franke function samples, and denotes the lower limit of any model MSE. We see that SGD has some of the same effect on overfitting as Ridge and LASSO in that it lets us increase model complexity beyond the point where the traditional OLS with matrix inversion blows up (purple dotted line). We see that OLS with SGD also blows up, but that is mainly caused by the learning rate $\eta$, and not model complexity. This becomes evident when we consider that the test and train MSEs follow each other closely, even beyond the best fit complexity (dotted lines). For regular OLS, test and train MSEs would split paths at that point at the latest.
+
+Model complexity also plays a role, though, as we see in the upper right pane in the figure. For $\eta = 2.5 \cdot 10^{-1}$, we get the best fit for the 5th degree polynomial, and steadily worsening overfit beyond that. With this data set, increasing the number of epochs and the batch size helps on this tendency, as we see in the remaining panes. Increasing the epochs from 50 to 250, as we see in the lower right pane dampens it a great deal, but the green $\eta = 2.5 \cdot 10^{-1}$ curve still bends upwards steeply after the 10th polynomial. Increasing the mini batch size from 10 to 50 flattens the curve completely, but hurts MSE somewhat, as we see in the upper left pane. We perform fewer iterations with batch size 50 than with 10, and this could be the cause for the worse fit. The last pane, bottom right, shows that increasing both epochs and mini batch size gives us an almost flat development after the best fit. None of this beats traditional OLS, however, which has the best fit overall as the dotted purple line shows.
+
+\vspace{5mm}
+
+In the OLS case, increasing the number of epochs or the batch size could not help the $\eta = 4.0 \cdot 10^{-1}$ case at all, it seemed. Adding a regularization parameter $\gamma$ to penalize the value of the coefficient estimates $\beta_j$ should help, though. In Figure \ref{fig:ridge_sgd}, which shows the same problem as above solved with the Ridge SGD method, we see the effect of adding a small $\gamma = 1.0 \cdot 10 ^{-7}$. The point where the $\eta = 4.0 \cdot 10^{-1}$ case blows up is pushed from the 4th to the 10th polynomial, and overall, MSE and $R_2$ is improved ever so slightly. Again we see that increasing the batch size from 10 to 50 has a dampening effect.
+
+The development of the $\eta = 2.5 \cdot 10^{-1}$ case with 50 epochs in the left column of the figure is somewhat surprising. The model suddenly blows up after the 11th polynomial, the reason for which is unclear. Increasing the batch size to 50 prevents this, as we see to the right.
+
+As for OLS, the traditional Ridge regression method with matrix inversion has a better fit than Ridge with SGD, as shown by the dotted purple lines.
+
+\vspace{5mm}
+
+As an alternative or addition to $L_2$ regularization, we can also play with the learning schedule. In Figure \ref{fig:learning_schedules} we see how two different schedules perform together with OLS. To the left we have the \lstinline|invscaling| schedule in Python's \lstinline|scikit-learn| module \cite{skl} with exponent $k=0.5$. See Equation (\ref{invscaling}). To the right we see the schedule suggested by Geron in \cite{geron2019hands} with $t_0 = \eta_0$ and $t_1 = 1$. See Equation (\ref{geron}). We see that we may increase the initial learning rate beyond the level which made the model blow up for the constant schedule in Figure \ref{fig:ols_sgd}. This may let the model converge quicker in the first iterations, which seems to hold for $\eta_0 = 1.0$ in 'invscaling', and $\eta_0 = 2.0$ for 'geron'. The number of epochs is 50 and the batch size is 10, which corresponds to the upper-left pane in Figure \ref{fig:ols_sgd}. We get approximately the same MSE/$R_2$ for 'invscaling', but for 'geron', performance is markedly worse.
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ols_sgd.png}
+	\caption{OLS with SGD on 250 randomly drawn samples generated by the Franke function. Test MSE in full-drawn lines for various learning rates $\eta$, and train MSE in dotted lines with colors for corresponding $\eta$. The blue-shaded area in each pane indicates the noise level in the samples. To the upper right we see that $\eta = 2.5 \cdot 10^{-1}$ bends steeply upwards after the best fit around $p_5(x,y)$. This tendency is damped by increasing either batch size or epochs. Overall, traditional OLS has better fit than OLS with SGD, as we see from the dotted purple line, which has $R_2 = 0.69$, but SGD prevents overfitting much in the same way as Ridge and LASSO.}
+	\label{fig:ols_sgd}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ridge_sgd.png}
+	\caption{Ridge with SGD on 250 randomly drawn samples generated by the Franke function. Test MSE in full-drawn lines for various learning rates $\eta$, and train MSE in dotted lines with colors for corresponding $\eta$. The blue-shaded area in each pane indicates the noise level in the samples. Ridge with SGD has approximately the same MSE/$R_2$ performance as OLS with SGD, but is more stable. The point at which the $\eta = 4.0 \cdot 10^{-1}$ model blows up in the 50 epochs cases is moved from the 5th to the 12th polynomial. The traditional Ridge regression method }
+	\label{fig:ridge_sgd}
+\end{figure}
+
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ols_sgd_schedules.png}
+	\caption{Two different learning schedules for OLS with SGD on the same data as in Figure \ref{fig:ols_sgd}, with 50 epochs and mini batch size 10. 'invscaling' (Equation (\ref{invscaling})) is initialized with $k=0.5$ and $\eta_0$, and 'geron' (Equation (\ref{geron})) is initialized with $t_0 = \eta_0$ and $t_1 = 1$. We see that a learning schedule lets us select larger values of $\eta_0$, and that it prevents the model from blowing up due to complexity. On this data set and with these parameters, 'invscaling' performs roughly as well as the 'constant' schedule, while 'geron' has poorer performance.}
+	\label{fig:ols_sgd_schedules}
+\end{figure}
 
 \subsection{Stochastic Gradient Descent: Logistic Regression}
 %Study the results as functions of the chosen learning rates. Add also an l2 regularization parameter λ. Compare your results with those from your FFNN code as well as those obtained using Scikit-Learn's logistic regression functionality. 
+
+cite \cite{skl-datasets}
 
 \subsection{Feed-Forward Neural Network: Regression}
 %Train your network and compare the results with those from your OLS and Ridge Regression codes from project 1. You should test your results against a similar code using Scikit-Learn
@@ -455,6 +513,10 @@ Classification is done on the 3-class problem described in Table \ref{tab:logreg
 % - State your main findings and interpretations
 % - Try as far as possible to present perspectives for future work
 % - Try to discuss the pros and cons of the methods and possible improvements
+
+%lin-reg SGD not overfitting but model instability at high complexity -> Hessian eigenvalue decreases: H = X^T X + lmd
+
+%log-reg gives insight into the problem which we are solving by investigating the betas -> ANN does not give us this
 
 \clearpage
 \bibliographystyle{unsrt}
