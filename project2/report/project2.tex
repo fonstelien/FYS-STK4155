@@ -72,6 +72,8 @@ In this report we will ....
 % - You need to explain how you implemented the methods and also say something about the structure of your algorithm and present some parts of your code
 % - You should plug in some calculations to demonstrate your code, such as selected runs used to validate and verify your results. The latter is extremely important!! A reader needs to understand that your code reproduces selected benchmarks and reproduces previous results, either numerical and/or well-known closed form expressions.
 
+In this section we will develop methods for solving regression and classification problems with traditional linear and logistic regression methods, as well as Feed-Forward Neural Network, a simple type of ANN. In the outline I will use matrix notation where possible, since this closely resembles the implementation in a computer programming environment with array programming capabilities like native MATLAB, C++ with the \lstinline|armadillo| lib or Python with the \lstinline|numpy| module, which I will use.
+
 \subsection{Stochastic Gradient Descent}
 Stochastic Gradient Descent is a numerical method for minimizing the cost function of a mathematical optimization method like OLS or logistic regression, where the minimization is done in an iterative, stochastic approach on a selection of the full set of samples. That is; given a cost function $\mathcal{C}(\mathbf{\beta})$, where $\mathbf{\beta} \in \mathbb{R}^p$, SGD lets us solve the problem
 \begin{equation}
@@ -224,7 +226,7 @@ Figure \ref{fig:ann-illustration} gives an illustration of a typical FFNN. The l
 
 \vspace{5mm}
 
-The following derivation is in large part based on \cite{fys-stk4155-notes}, and the reader is encouraged to refer to this for a thorough outline.
+What follows now is a mathematical derivation of the feed-forward, back-propagation and variable update of an FFNN. It is in large part based on \cite{fys-stk4155-notes}, but translated into full matrix notation for simpler implementation in an array programming environment. The reader is encouraged to refer to this source for a thorough, general outline.
 
 As indicated above, the input layer in our FFNN does not have an activation function, it only passes the design matrix $\mathbf{X}$ on to the first hidden layer. If we let $\mathbf{X} \in \mathbb{R}^{n \times p}$, the input layer will have $p$ nodes which are all connected to the $m$ nodes of layer 1, the first hidden layer. Layer 1's weight matrix $\mathbf{W}_1 \in \mathbb{R}^{p \times m}$ is then given as
 \begin{equation}
@@ -310,11 +312,13 @@ Like for the Stochastic Gradient Descent method discussed in the previous sectio
 
 \vspace{5mm}
 
-Neural networks are generally data hungry \cite{fys-stk4155-notes}, so to make the ANN training process as efficient as possible, we will use the Stochastic Gradient Descent method here as well. This only involves putting the training process inside the double epochs-batches loop in Listing \ref{lst:sgd}. An outline of the training process is given in Listing \ref{lst:ann-training}.
+Neural networks are generally data hungry \cite{fys-stk4155-notes}, so to make the ANN training process as efficient as possible, we will use the Stochastic Gradient Descent method here as well. Another advantage of this approach is that the scattered descent reduces the chance of having the learning process getting stuck in local minima or saddle points. This only involves putting the training process inside the double epochs-batches loop in Listing \ref{lst:sgd}. An outline of the training process is given in Listing \ref{lst:ann-training}.
 
 \vspace{5mm}
 
-The \lstinline|activation_function()|s and \lstinline|activation function_derivative()|s in Listing \ref{lst:ann-training} are very simple non-linear functions. Many types and variants for each type exist, but in this project we limit ourselves to those listed in Table \ref{tab:activation-funcs}, with shapes as shown in Figure XX.
+The \lstinline|activation_function()|s and \lstinline|activation function_derivative()|s in Listing \ref{lst:ann-training} are very simple non-linear functions. Many types and variants for each type exist, but in this project we limit ourselves to those listed in Table \ref{tab:activation-funcs}.
+
+%, with shapes as shown in Figure XX.
 
 The \lstinline|cost_function_derivative()|s in Listing \ref{lst:ann-training} which we will use in this report are the derivatives with respect to the outputs $\mathbf{A}_L$ of the Mean Squared Error cost function (MSE) and the Cross Entropy cost function (CE). The MSE derivative is given by
 \begin{equation}
@@ -326,13 +330,26 @@ and the CE derivative by
 \end{equation}
 Equation (\ref{ce-partial}) is due to \cite{fys-stk4155-notes}.
 
+\vspace{5mm}
 
+Figure \ref{fig:demo_lin_log_ffnn} shows the simple mock-up regression and classification problems used for SGD demonstration in the previous chapter (Figure \ref{fig:demo_lin_log_reg}) solved by our FFNN.
+
+For the regression problem we fit a network with 1 hidden layer. It has 2 nodes in the input and hidden layers, and 1 node in the output. The activation function is always sigmoid, and the cost function MSE. We have trained this network on $n = 100$ samples $y_i = 1 + 2x_i + \varepsilon_i$ for 100 epochs with mini batches of 10 samples and use $\eta = 0.5$ and the constant training schedule. The 100 samples are then fed back in to make a prediction. We see that as expected the prediction is a non-linear curve, and that it closely follows the OLS fit, but with a slight bend.
+
+Classification is done on the 3-class problem described in Table \ref{tab:logreg-demo}. Again the FFNN has 1 hidden layer, but with 4 nodes in the input and hidden layers, and 3 nodes in the output layer. The hidden layer activation function is ReLU, and the output layer function is softmax, which is suitable for multiclass problems. The cost function is Cross Entropy. We have trained the network for 100 epochs with batch size 1, $\eta = 0.1$ and $L_2$ regularization $\lambda = 0.001$. In the input data cases 1,2,3 correspond to classes 1,2,3, which is also the prediction of our FFNN when the training data is fed back into the network for testing.
 
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[width=1\linewidth]{ann-illustration.jpeg}
 	\caption{ANN with one input layer, two hidden layers, and an output layer. The design matrix is fed into the input layer, and is fed through the hidden layers and the output layer value is evaluated against a cost function. The error is then back-propagated and regulates the adjustment of the weights associated with each node-to-node connection and the bias of each node are in order to make a better fit in the next iteration. To introduce non-linearity, the output of each node is decided by the inputs and bias fed into a non-linear activation function. This network could be used for either regression, or binary classification. Illustration borrowed from \cite{fys-stk4155-notes}.}
 	\label{fig:ann-illustration}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{demo_lin_log_ffnn.png}
+	\caption{Demonstration of FFNN on a simple regression problem to the left, and a simple classification problem to the right. For linear regression, the fit is guaranteed to be best for the simple OLS case since the model we try to fit corresponds exactly to to the function which generated the samples, but we see that the FFNN finds a non-linear fit which closely follows the OLS line. For the classification problem, we predict three cases with three features and three classes of outcome. In the input data cases 1,2,3 correspond to classes 1,2,3, respectively. See Table \ref{tab:logreg-demo} for details. We see that we pick the right class with high confidence in each case. Compare with Figure \ref{fig:demo_lin_log_reg}, which shows the same set of problems solved by linear and logistic regression methods.}
+	\label{fig:demo_lin_log_ffnn}
 \end{figure}
 
 %\begin{minipage}{\linewidth}
@@ -369,7 +386,7 @@ Equation (\ref{ce-partial}) is due to \cite{fys-stk4155-notes}.
 			FOR EACH layer IN REVERSED(layers) DO
 				"set layer's activation function_derivative() with respect to its inputs"
 				"set layer's deltas by the back-propagated error"
-				error = "error to back-propagate error by this layer's new delta and weights"
+				error = "error to back-propagate by this layer's new delta and weights"
 			END FOR EACH		
 			
 			// Update weigths and biases
@@ -386,7 +403,7 @@ Equation (\ref{ce-partial}) is due to \cite{fys-stk4155-notes}.
 
 
 \begin{table}[!ht]
-	\caption{Various activation functions and their derivatives. More variants and types exist, but these are the ones used in this report. ReLU, leaky-ReLU and unit-step derivatives are not defined at $z=0$, but we approximate them as 0 here. Also, the derivative of unit-step is of course always 0, but to progress the learning process it is defined as shown here. The unit-step is usually best suited for classification problems, and softmax especially for multinomial classification. For linear regression problems, sigmoid or one of the ReLUs can be used.}
+	\caption{Various activation functions and their derivatives. More variants and types exist, but these are the ones used in this report. ReLU, leaky-ReLU and unit-step derivatives are not defined at $z=0$, but we approximate them as 0 here. Also, the derivative of unit-step is of course always 0, but to progress the learning process it is defined as shown here. The unit-step is usually best suited for classification problems, and softmax especially for multiclass problems. For linear regression problems, sigmoid or one of the ReLUs can be used.}
 	\label{tab:activation-funcs}
 	\begin{center}
 		\begin{tabular}{l|l|l|l}
@@ -413,16 +430,22 @@ Equation (\ref{ce-partial}) is due to \cite{fys-stk4155-notes}.
 % - Make sure that figures and tables should contain enough information in their captions, axis labels etc so that an eventual reader can gain a first impression of your work by studying figures and tables only.
 
 \subsection{Stochastic Gradient Descent: Linear Regression}
-
+%Perform an analysis of the results for OLS and Ridge regression as function of the chosen learning rates, the number of mini-batches and epochs as well as algorithm for scaling the learning rate.
 
 \subsection{Stochastic Gradient Descent: Logistic Regression}
-
+%Study the results as functions of the chosen learning rates. Add also an l2 regularization parameter λ. Compare your results with those from your FFNN code as well as those obtained using Scikit-Learn's logistic regression functionality. 
 
 \subsection{Feed-Forward Neural Network: Regression}
+%Train your network and compare the results with those from your OLS and Ridge Regression codes from project 1. You should test your results against a similar code using Scikit-Learn
 
+%Comment your results and give a critical discussion of the results obtained with the Linear Regression code and your own Neural Network code. Compare the results with those from project 1. Make an analysis of the regularization parameters and the learning rates employed to find the optimal MSE and R2 scores.
+
+%You should now also test different activation functions for the hidden layers. Try out the Sigmoid, the RELU and the Leaky RELU functions and discuss your results. You may also study the way you initialize your weights and biases. 
 
 \subsection{Feed-Forward Neural Network: Classification}
+%We will here study the MNIST data set of hand-written numbers. Use the Softmax function as activation function. Your code should however also be able to use a binary activation function as well. 
 
+%Discuss your results and give a critical analysis of the various parameters, including hyper-parameters like the learning rates and the regularization parameter λ (as you did in Ridge Regression), various activation functions, number of hidden layers and nodes and activation functions. 
 
 
 \clearpage
