@@ -4,7 +4,7 @@ from utils import *
 from StochasticGradientDescent import SGD
 
 
-def run_ols_kfold(X, z, SGD, k=5, polynomial_orders=[]):
+def run_ols_kfold(X, z, SGD=None, k=5, polynomial_orders=[]):
     '''Runs Ordinary Least Square regression with k-fold resampling on X, z on every polynomial up to max_poly_order. Returns DataFrame with columns=["pol_order", "train_mse", "test_mse"]'''
 
     ols_k_df = DataFrame(columns=["pol_order", "train_mse", "test_mse"])
@@ -20,7 +20,11 @@ def run_ols_kfold(X, z, SGD, k=5, polynomial_orders=[]):
             X_test = Xpn[test_split]
             z_test = z[test_split]
 
-            beta_hat = SGD.run(X_train, z_train)
+            if SGD:
+                beta_hat = SGD.run(X_train, z_train)
+            else:
+                beta_hat = np.linalg.pinv(X_train) @ z_train
+
             mse_train[i] = mse(z_train, X_train @ beta_hat)
             mse_test[i] = mse(z_test, X_test @ beta_hat)
 
