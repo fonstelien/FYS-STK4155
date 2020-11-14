@@ -176,7 +176,7 @@ The logistic regression classification problem mock-up is shown in Table \ref{ta
 	\label{fig:demo_lin_log_reg}
 \end{figure}
 
-\begin{minipage}{\linewidth}
+%\begin{minipage}{\linewidth}
 	\begin{lstlisting}[caption={Stochastic Gradient Descent algorithm. Cost function gradients and learning schedules may be defined independently of the implementation of SGD. This implementation runs for \lstinline|epochs*batches| iterations, and does not sense if or when it converges.},label={lst:sgd}] [!ht]
 		// Declarations
 		betas = "initial coefficient values"
@@ -200,7 +200,7 @@ The logistic regression classification problem mock-up is shown in Table \ref{ta
 			END FOR
 		END FOR
 	\end{lstlisting}
-\end{minipage}
+%\end{minipage}
 
 \begin{table}[!ht]
 	\caption{Mock-up classification problem for demonstration of logistic regression. The table has three cases or samples 1,2,3, which are represented with the design matrix $\mathbf{X}'$ in the middle and the one-hot response variable matrix $\mathbf{Y}$ to the right. See the result of the demo to the right in Figure \ref{fig:demo_lin_log_reg}.}
@@ -429,13 +429,15 @@ Classification is done on the 3-class problem described in Table \ref{tab:logreg
 % - An eventual reader should be able to reproduce your calculations if she/he wants to do so. All input variables should be properly explained.
 % - Make sure that figures and tables should contain enough information in their captions, axis labels etc so that an eventual reader can gain a first impression of your work by studying figures and tables only.
 
-In this section we will look at how the methods that we developed in the previous section perform on various types of problems. First we will investigate polynomial regression with the OLS and Ridge methods using SGD to see how the choice of various hyperparameters like epochs, mini batch size, $L_2$ regularization, learning rates and learning schedules influence the generated model. For this we will use samples of the Franke function, which is studied in great detail in \cite{project1}. Then we will move on to logistic regression with SGD, and study both binomial and multinomial classification problems, more specifically the a version of the famous MNIST dataset of handwritten figures 0 to 9, and the equally famous Wisconsin Breast Cancer data set.
+In this section we will look at how the methods that we developed in the previous section perform on various types of problems. First we will investigate polynomial regression with the OLS and Ridge methods using SGD to see how the choice of various hyperparameters like epochs, mini batch size, $L_2$ regularization, learning rates and learning schedules influence the generated model. For this we will use samples of the Franke function, which is studied in great detail in \cite{project1}. Then we will move on to logistic regression solved with SGD, and study both binomial and multinomial classification problems, more specifically the famous Wisconsin Breast Cancer dataset and a version of the equally famous MNIST dataset of handwritten figures 0 to 9.
 
 For the Feed-Forward Neural Network we will study its performance on all of these problems, with varying activation functions, cost functions and hyperparameters.
 
-All code is written in Python, with extensive use of the \lstinline|numpy| and \lstinline|sklearn| modules.
+I have written all code in Python, with extensive use of the \lstinline|numpy| and \lstinline|sklearn| modules.
 
-\subsection{Stochastic Gradient Descent: Linear Regression}
+To ensure that the results are representative and that we are not just \textit{getting lucky}, I have as a standard used 5-fold cross-validation in the generation of all results.
+
+\subsection{Linear Regression with Stochastic Gradient Descent}
 %Perform an analysis of the results for OLS and Ridge regression as function of the chosen learning rates, the number of mini-batches and epochs as well as algorithm for scaling the learning rate.
 
 Stochastic Gradient Descent for linear regression introduces the a new set of hyperparameters which all have different influence on the gradient descent process. We must define number of epochs, size of mini batches, learning rates and learning schedules. In the Ridge regression method we also have the $L_2$ regularization parameter $\lambda$. In the following we will study their influence on the fit of a polynomial in two variables $p_n(x,y)$ to the Franke function, which is given by
@@ -458,7 +460,9 @@ Model complexity also plays a role, though, as we see in the upper right pane in
 
 \vspace{5mm}
 
-In the OLS case, increasing the number of epochs or the batch size could not help the $\eta = 4.0 \cdot 10^{-1}$ case at all, it seemed. Adding a regularization parameter $\gamma$ to penalize the value of the coefficient estimates $\beta_j$ should help, though. In Figure \ref{fig:ridge_sgd}, which shows the same problem as above solved with the Ridge SGD method, we see the effect of adding a small $\gamma = 1.0 \cdot 10 ^{-7}$. The point where the $\eta = 4.0 \cdot 10^{-1}$ case blows up is pushed from the 4th to the 10th polynomial, and overall, MSE and $R_2$ is improved ever so slightly. Again we see that increasing the batch size from 10 to 50 has a dampening effect.
+In the OLS case, increasing the number of epochs or the batch size could not help the $\eta = 4.0 \cdot 10^{-1}$ case at all, it seemed. Adding a regularization parameter $\gamma$ to penalize the value of the coefficient estimates $\beta_j$ should help, though. Before we do that, however, we need to scale the design matrix feature-wise by centering them and dividing by the standard deviation.
+
+In Figure \ref{fig:ridge_sgd}, which shows the same problem as above solved with the Ridge SGD method, we see the effect of adding a small $\gamma = 1.0 \cdot 10 ^{-7}$. The point where the $\eta = 4.0 \cdot 10^{-1}$ case blows up is pushed from the 5th to the 11th polynomial, and overall, MSE and $R_2$ is improved ever so slightly. Again we see that increasing the batch size from 10 to 50 has a dampening effect.
 
 The development of the $\eta = 2.5 \cdot 10^{-1}$ case with 50 epochs in the left column of the figure is somewhat surprising. The model suddenly blows up after the 11th polynomial, the reason for which is unclear. Increasing the batch size to 50 prevents this, as we see to the right.
 
@@ -490,22 +494,107 @@ As an alternative or addition to $L_2$ regularization, we can also play with the
 	\label{fig:ols_sgd_schedules}
 \end{figure}
 
-\subsection{Stochastic Gradient Descent: Logistic Regression}
-%Study the results as functions of the chosen learning rates. Add also an l2 regularization parameter λ. Compare your results with those from your FFNN code as well as those obtained using Scikit-Learn's logistic regression functionality. 
-
-cite \cite{skl-datasets}
-
-\subsection{Feed-Forward Neural Network: Regression}
+\subsection{Regression with Feed-Forward Neural Network}
 %Train your network and compare the results with those from your OLS and Ridge Regression codes from project 1. You should test your results against a similar code using Scikit-Learn
 
 %Comment your results and give a critical discussion of the results obtained with the Linear Regression code and your own Neural Network code. Compare the results with those from project 1. Make an analysis of the regularization parameters and the learning rates employed to find the optimal MSE and R2 scores.
 
 %You should now also test different activation functions for the hidden layers. Try out the Sigmoid, the RELU and the Leaky RELU functions and discuss your results. You may also study the way you initialize your weights and biases. 
 
-\subsection{Feed-Forward Neural Network: Classification}
+The activation function in the output layer is the sigmoid function, which is limited to $[0,1]$. See Table \ref{tab:activation-funcs}. To approximate the response variables, we need to scale them to the same range $[0,1]$. We do this by first adding the minimum sample value to all response variables and then dividing by the maximum value. Likewise we have to center and scale the design matrix, since we will use $L_2$ regularization.
+
+Figure \ref{fig:ffnn_reg_sigmoid} shows the $R_2$ scores for an $\eta$-vs-$\lambda$ grid search with a Feed-Forward Neural Network. We have used the same Franke function samples as in the preceding discussion on OLS and Ridge; 250 random samples with some noise. The design matrix is generated by a 12th degree polynomial in two variables, meaning that it has $p = 78$ features. The network thus has 78 nodes in the input layer, and we have used the same number in the single hidden layer. The hidden layer activation function is sigmoid, which is the same as the single-node output. We thus have 78+1 biases and 78*79 weights to determine, 6'241 parameters all-in-all. The initialization is done by random values in the range $[0,1]$ for the weights, and the biases are all set to 0.01.
+
+We see in the lower left pane of the figure that the best $R_2$ score 0.55 occurs for 250 epochs and mini batch size 10, with $\eta = 3.0$ and $\lambda = 1.0 \cdot 10^{-3}$. This is quite poor compared with the performance of OLS and Ridge in the previous section, and even poorer when compared with traditional OLS, which achieved an $R_2$ of 0.69. For the other sets of epochs and batch sizes, performance is quite low; barely tipping over $R_2 = 0$, which means that generally we would be better off by simply approximating the function by taking the mean of the samples.
+
+The $R_2$ scores in Figure \ref{fig:ffnn_reg_sigmoid} vary widely for relatively short changes in the hyperparameters $\eta$ and $\lambda$. This suggests that the shape of the variable space which we are moving in is quite rugged, with many local minima and saddle points. There may well be better fits to be found, and changing the activation function may help with this. 
+
+In Figure \ref*{fig:ffnn_reg_relus} two different activation functions have been tested on the same data and with 250 epochs, batch size 10, as gave the best fit for sigmoid. To the left we see the result of the ReLU activation function, and to the right the related leaky-ReLU. Again, see Table \ref{tab:activation-funcs}. ReLU has best performance for $\eta = 0.1-0.2$ and $\lambda=1.0 \cdot 10^{-2}$, where it gets an $R_2$ score of 0.56 -- marginally better than sigmoid's 0.55. Leaky-ReLU, on the other hand, achieves a comparable $R_2$ of 0.55 at $\eta = 3.0$ and $\lambda=1.0 \cdot 10^{-3}$, so the small difference between the two functions gives a relatively large impact in the hyperparameters.
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ffnn_reg_sigmoid.png}
+	\caption{$R_2$ scores on the Franke function after $\eta$-vs-$\lambda$ grid search with a Feed-Forward Neural Network. The network has a single hidden layer with sigmoid activation function. The network has been trained on 250 samples and 5-fold cross validation, with varying number of epochs and mini batch size in each pane. The best score $R_2=0.55$ is somewhat poorer than the score obtained with OLS and Ridge.}
+	\label{fig:ffnn_reg_sigmoid}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ffnn_reg_relus.png}
+	\caption{$R_2$ scores on the Franke function after $\eta$-vs-$\lambda$ grid search the same Feed-Forward Neural Network as in Figure \ref{fig:ffnn_reg_sigmoid}, but with ReLU and leaky-ReLU activation functions in the hidden layer instead of sigmoid. Epochs is 250 and mini batch size 10. The performance of the ReLU functions is comparable with that of sigmoid, but has a large influence on the choice of hyperparameters.}
+	\label{fig:ffnn_reg_relus}
+\end{figure}
+
+\subsection{Classification with Feed-Forward Neural Network}
 %We will here study the MNIST data set of hand-written numbers. Use the Softmax function as activation function. Your code should however also be able to use a binary activation function as well. 
 
 %Discuss your results and give a critical analysis of the various parameters, including hyper-parameters like the learning rates and the regularization parameter λ (as you did in Ridge Regression), various activation functions, number of hidden layers and nodes and activation functions. 
+
+We will now study how our Feed-Forward Neural Network performs on classification problems. Let's start with binomial classification using the Wisconsin Breast Cancer dataset, available through Python's \lstinline|sklearn| module \cite{skl-datasets}. The dataset contains 569 samples with 30 features characterizing breast cancers. See Figure \ref{fig:log_breast_cancer_bars} further down. The design matrix will consist of 30 features, and the response variables will be contained in a vector of length 569, with 1s and 0s. 
+
+Of the 569 samples, 357 are \text{positive} indications for breast cancers, meaning that a strategy of guessing only 1s would yield an \textit{accuracy} of about 63 \%. 63 \% must thus serve as a baseline when we evaluate the accuracy of our model.
+
+It proved difficult to train an FFNN with one hidden layer to fit to the breast cancer dataset. Therefore, what we will use is 30 nodes in the input layer directly connected to the output layer, building what is known as a \textit{perceptron} model. The perceptron has a unit-step activation function (see Table \ref{tab:activation-funcs}).
+
+In Figure \ref{fig:ffnn_breast_cancer} we see the result of a $\eta$-vs-$\lambda$ grid search on the perceptron model. We see that for 250 epochs and batch size 10 it has 95 \% accuracy, meaning that it performs quite well compared to the 63 \% baseline. There is not very much variation for other numbers of epochs and batch sizes, and the model is not very sensitive to the learning rate and $L_2$ regularization parameter. This indicates that the perceptron model is stable and reliable when applied to this data set.
+
+\vspace{5mm}
+
+Next, let's evaluate our FFNN's performance on \lstinline|sklearn|'s reduced version of the MNIST dataset of handwritten numbers 0 to 9 \cite{skl-datasets}. The full, more expansive dataset is freely available from from the MNIST website at. See \cite{mnist}. Some samples from the dataset which we will use here are shown in Figure \ref{fig:mnist_digits}. 
+
+The dataset contains 1797 pictures, each with $8 \times 8$ pixels with a numerical value 0 to 16. The design matrix thus has shape $1797 \times 64$, and the one-hot representation of the reponse variables becomes a $1797 \times 10$ matrix with a single 1 in each row, and the rest 0s.
+
+Figure XX shows the result of the $\eta$-vs-$\lambda$ grid search. The network has 64 input nodes, and we have selected equally many nodes in the hidden layer, which has sigmoid activation function. The output layer has one node for each of the 10 classes of outcomes and has softmax activation function, which ensures convergence towards one output for each 64-feature input sample. The system has 4'810 weights and biases to train.
+
+
+
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{ffnn_breast_cancer.png}
+	\caption{Feed-Forward Neural Network as perceptron model (no hidden layer). The panes show the result of $\eta$-vs-$\lambda$ grid searches for different numbers of epochs and mini batch sizes. The baseline accuracy (predict only 1s) is 63 \%, and we achieve 95 \% with this perceptron model. Activation function is the unit-step, and learning schedule 'geron' with $t_0 = \eta$ and $t_1 = 1$ (see Equation (\ref{geron})).}
+	\label{fig:ffnn_breast_cancer}
+\end{figure}
+
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{mnist_digits.png}
+	\caption{Some samples from the reduced MNIST dataset available through the \lstinline|sklearn| Python module. Each picture contains one handwritten figure and has $8 \times 8$ pixels.}
+	\label{fig:mnist_digits}
+\end{figure}
+
+\subsection{Logistic Regression}
+%Study the results as functions of the chosen learning rates. Add also an l2 regularization parameter λ. Compare your results with those from your FFNN code as well as those obtained using Scikit-Learn's logistic regression functionality. 
+
+Logistic regression 
+
+
+
+cite \cite{skl-datasets}
+cite \cite{mnist}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{log_breast_cancer_bars.png}
+	\caption{.}
+	\label{fig:log_breast_cancer_bars}
+\end{figure}
+
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{log_breast_cancer.png}
+	\caption{.}
+	\label{fig:log_breast_cancer}
+\end{figure}
+
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=1\linewidth]{log_digits.png}
+	\caption{.}
+	\label{fig:log_digits}
+\end{figure}
 
 
 \clearpage
@@ -517,6 +606,8 @@ cite \cite{skl-datasets}
 %lin-reg SGD not overfitting but model instability at high complexity -> Hessian eigenvalue decreases: H = X^T X + lmd
 
 %log-reg gives insight into the problem which we are solving by investigating the betas -> ANN does not give us this
+
+%neural network without hidden layer is a non-linear transformation of the input data, much in the same way as logistic regression, so whether it should be considered a neural network or not is up for discussion.
 
 \clearpage
 \bibliographystyle{unsrt}

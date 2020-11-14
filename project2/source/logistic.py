@@ -21,8 +21,7 @@ def run_logistic_kfold(X, t, t_onehot, SGD, k=5, etas=[], lambdas=[]):
 
                 X_test = X[test_split]
                 t_test = t[test_split]
-
-                X_train, X_test = scale(X_train, X_test, with_std=False, scale_intercept=True)
+                X_train, X_test = scale(X_train, X_test, with_std=True)
 
                 beta_hat = SGD.run(X_train, t_hot_train, eta0=eta, lmd=lmd)
 
