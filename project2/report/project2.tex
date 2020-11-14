@@ -45,7 +45,7 @@
 % - Main Results 
 % - The implications
 
-In this report we give a concise presentation of the mathematical derivation of Stochastic Gradient Descent (SGD) and Feed-Forward Neural Networks (FFNN), a simple type of artificial neural network. We show that SGD may be used with linear regression methods like Ordinary Least Squares (OLS) and Ridge, but that its $R_2$ score generally is somewhat poorer than that of traditional OLS with matrix inversion, at 0.63 vs. 0.69. We also show that a simple implementation of a FFNN performs well on the simplified MNIST dataset available through \lstinline|sklearn|, with 98 \% accuracy vs. 99 \% for the widely known \lstinline|sklearn.neural_network.MPLClassifier|.
+In this report we give a concise presentation of the mathematical derivation of Stochastic Gradient Descent (SGD) and Feed-Forward Neural Networks (FFNN), a simple type of artificial neural network. We show that SGD may be used with linear regression methods like Ordinary Least Squares (OLS) and Ridge, but that its $R_2$ score generally is somewhat poorer than that of traditional OLS with matrix inversion, at 0.63 vs. 0.69 when applied on the Franke function with 250 samples. We also show that a simple implementation of a FFNN performs well on the simplified MNIST dataset available through Python's \lstinline|sklearn| module, with 98 \% accuracy vs. 99 \% for the widely used \lstinline|sklearn.neural_network.MPLClassifier|. For classification problems with linear decision boundary, we show that logistic regression has accuracy comparable to that of the FFNN, and that it also produces a model which gives insights about the problem. Logistic regression is also less computationally demanding than FFNN.
 
 Please visit my GitHub repository \url{https://github.com/fonstelien/FYS-STK4155/tree/master/project2} for the Python source code developed for this report.
 
@@ -66,9 +66,9 @@ SGD is useful in other methods as well. SGD can be used in logistic regression m
 
 In this report we will develop methods for SGD in linear and logistic regression methods, as well as the Feed-Forward Neural Network, and give outlines for their implementation in a computer program. We will aim our mathematical derivations on the implementation in a array programming environment. We will study the performance of our methods on linear regression problems and both binomial and multinomial classification problems, using datasets which are well known in the literature, namely the Wisconsin Breast Cancer dataset and a simplified form of the MNIST dataset of handwritten figures 0 to 9 \cite{skl-datasets}.
 
-We begin in Section \ref{methods} with the mathematical derivations, first of Stochastic Gradient Descent, and then the Feed-Forward Neural Network. Then we move on Section \ref{results}, where we study the results and performance of the methods. We end by summing up our findings, with some suggestions for further studies in Section \ref{conclusion}.
+We begin in Section \ref{methods} with the mathematical derivations, first of Stochastic Gradient Descent, and then the Feed-Forward Neural Network. Then we move on Section \ref{results}, where we study the results and performance of the methods. We end by summing up our findings, with some suggestions for further work in Section \ref{conclusion}.
 
-\clearpage
+
 \section{Methods} \label{methods}
 % - Describe the methods and algorithms
 % - You need to explain how you implemented the methods and also say something about the structure of your algorithm and present some parts of your code
@@ -105,7 +105,7 @@ However, the cost function $\mathcal{C}(\mathbf{\beta})$ is guaranteed to be con
 
 \vspace{5mm}
 
-The next problem then becomes to decide when to stop the search for $\mathbf{\hat{\beta}}$. One solution is to stop when the difference between the iterations becomes smaller than some defined value, $||\mathbf{\beta}^{(n+1)} - \mathbf{\beta}^{(n)}||_2 \le \varepsilon$. Another, which we will use here, is simply to define a number of iterations, and extract the solution thereafter. This might seem a little inaccurate, maybe, but works well since the direction of $\mathbf{g}$ is always towards the global minimum, and $|\mathbf{g}| \rightarrow 0$ when $\mathbf{\beta} \rightarrow \mathbf{\hat{\beta}}$, which means that if we come close to $\mathbf{\hat{\beta}}$, the final approximation $\mathbf{\beta}^{(final)} \approx \mathbf{\hat{\beta}}$.
+The next problem then becomes to decide when to stop the search for $\mathbf{\hat{\beta}}$. One solution is to stop when the difference between the iterations becomes smaller than some defined value, $||\mathbf{\beta}^{(n+1)} - \mathbf{\beta}^{(n)}||_2 \le \varepsilon$. Another, which we will use here, is simply to define a number of iterations, and extract the solution thereafter. This might seem a little inaccurate, maybe, but works well since the direction of the gradient $\mathbf{g}$ is always towards the global minimum, and $|\mathbf{g}| \rightarrow 0$ when $\mathbf{\beta} \rightarrow \mathbf{\hat{\beta}}$, which means that if we come close to $\mathbf{\hat{\beta}}$, the final approximation $\mathbf{\beta}^{(final)} \approx \mathbf{\hat{\beta}}$.
 
 A further refinement to this is to incrementally decrease $\eta$ for each iteration towards $\mathbf{\hat{\beta}}$; that is to let $\eta \rightarrow \eta^{(i)} = f(i)$, such that $\eta^{(i+1)} < \eta^{(i)}$. This increases the stability of the method since it allows us to even have $\eta^{(0)} > 2/\lambda_{max}$ and still get convergence.
 
@@ -113,7 +113,7 @@ Two such \textit{learning schedules} $\eta^{(i)} = f(i)$ are the \lstinline|invs
 \begin{equation} \label{invscaling}
 	\eta^{(i)} = \frac{\eta^{(0)}}{i^k},
 \end{equation}
-and another one suggested by Geron in \cite{geron2019hands};
+and another suggested by Geron in \cite{geron2019hands};
 \begin{equation} \label{geron}
 	\eta^{(i)} = \frac{t_0}{i + t_1}.
 \end{equation}
@@ -121,7 +121,7 @@ Here the factors $k, t_0, t_1$ are user defined. Figure \ref{fig:learning_schedu
 
 \vspace{5mm}
 
-Calculating the gradient of the cost function $\mathbf{g}$ in Equation (\ref{newton-raphson-eta}) may prove computationally demanding if the data set is large. The gradient of the logistic regression method cost function, for instance, would require that we calculate the matrix product $\mathbf{X}^\intercal \mathbf{P}$ in each iteration. In SGD, we select a subset of the samples by a stochastic process, and calculated an approximated gradient based on this subset or mini batch. The standard deviation of the gradient's expectation value relative to the number of samples $n$ follows the relation \cite{fys-stk4155-notes}
+Calculating the gradient of the cost function $\mathbf{g}$ in Equation (\ref{newton-raphson-eta}) may prove computationally demanding if the data set is large. The gradient of the logistic regression method cost function, for instance, would require that we calculate the matrix product $\mathbf{X}^\intercal \mathbf{P}$ in each iteration. See Equation (\ref{cost-ce}). In SGD, we select a subset of the samples by a stochastic process, and calculated an approximated gradient based on this subset or mini batch. The standard deviation of the gradient's expectation value relative to the number of samples $n$ follows the relation \cite{fys-stk4155-notes}
 \begin{equation}
 	\sigma_g \sim \frac{1}{\sqrt{n}},
 \end{equation}
@@ -129,7 +129,7 @@ which means that if we collect a mini batch of 100 from a data set of 1000 sampl
 
 Another great advantage of only approximating the gradient on a mini sample is the decreased risk of getting stuck in a local minimum or saddle point, where $\mathbf{g} \rightarrow 0$, but $\mathbf{\beta} \neq \mathbf{\hat{\beta}}$. This is especially useful in neural network applications, where it is not given that we have a convex cost function.
 
-The implementation of SGD is outlined in Listing \ref{lst:sgd}. An \lstinline|epoch| is defined as a full run through the full set of samples. The \lstinline|learning_schedule()|s could be as in Equations (\ref{invscaling}) and (\ref{geron}). 
+The implementation of SGD is outlined in Listing \ref{lst:sgd}. One \lstinline|epoch| is a run through the full set of samples. The \lstinline|learning_schedule()|s could be as in Equations (\ref{invscaling}) and (\ref{geron}). 
 
 \vspace{5mm}
 
@@ -166,14 +166,14 @@ where $\mathbf{y}$ is the response variable vector and $\lambda$ is the $L_2$ re
 %\end{minipage}
 
 The CE cost function gradient is given by
-\begin{equation} \label{cost-mse}
+\begin{equation} \label{cost-ce}
 	\mathbf{g}_{ce}^{(n)} = \frac{\partial \mathcal{C}_{ce}^{(n)}}{\partial \mathbf{\beta}} = \frac{1}{n} (\mathbf{X}^\intercal \mathbf{P}^{(n)} - \mathbf{X}^\intercal \mathbf{Y}) + \lambda \mathbf{\beta}^{(n)}.
 \end{equation}
 Here, $\mathbf{Y} \in \mathbb{R}^{n \times c}$ is the response variable matrix with $n$ samples and $c$ different classes of outcome. Each row $\mathbf{y}_i$ has a single 1, and the rest 0s. Likewise, $\mathbf{P} \in \mathbb{R}^{n \times c}$ is the probability matrix for the $n$ samples and $c$ classes following the \textit{softmax} function:
 \begin{equation}
 	\mathbf{P} = \mathrm{softmax}(\mathbf{X}'\mathbf{B}).
 \end{equation}
-$\mathbf{X}'$ is the design matrix with an intercept column added in front $\mathbf{X}' = [\mathbf{1} \quad \mathbf{X}]$. The coefficient matrix $\mathbf{B} \in \mathbb{R}^{(p+1) \times c}$, accounting for the intercept, i.e. the variation in outcomes not explained by the features in $\mathbf{X}$. $\mathbf{B}$ is given by
+$\mathbf{X}'$ is the design matrix with an intercept column added in front $\mathbf{X}' = [\mathbf{1} \quad \mathbf{X}]$. The coefficient matrix $\mathbf{B} \in \mathbb{R}^{(p+1) \times c}$, where $p + 1$ accounts for the intercept, i.e. the variation in outcomes not explained by the features in $\mathbf{X}$. $\mathbf{B}$ is given by
 \begin{equation}
 	\mathbf{B} = [\mathbf{\beta}_1 \quad \mathbf{\beta}_2 \quad \cdots \quad \mathbf{\beta}_c], \quad \text{where} \quad \mathbf{\beta}_j = [\beta_{0j} \quad \beta_{1j} \quad \cdots \quad \beta_{pj}]^\intercal.
 \end{equation}
@@ -186,9 +186,9 @@ and the sum of each row $\mathbf{p}_i$ in $\mathbf{P}$ is 1; $\sum_{j} p_{ij} = 
 
 \vspace{5mm}
 
-In Figure \ref{fig:demo_lin_log_reg} we see a demonstration on some mock-up cases for each of the regression methods OLS and Rdge with SGD, and logistic with SGD. For the linear regression cases, a simple linear function with some noise has been used; $y_i = 1 + 2x_i + \varepsilon_i$, where $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.75^2)$, and samples $n=100$. We see that both methods make the fit quite well after 20 epochs and 10 mini batches with constant learning schedule with $\eta = 0.5$ for OLS and $\eta = 0.7, \lambda=0.1$ for Ridge.
+In Figure \ref{fig:demo_lin_log_reg} we see a demonstration on some mock-up cases for each of the regression methods OLS and Rdge with SGD, and logistic with SGD. For the linear regression cases, a simple linear function with some noise has been used; $y_i = 1 + 2x_i + \varepsilon_i$, where $\mathbf{\epsilon} \sim \mathcal{N}(0, 0.75^2)$, and samples $n=100$. We see that both methods make the fit quite well after 20 epochs and mini batch size 10 with constant learning schedule with $\eta = 0.5$ for OLS and $\eta = 0.7, \lambda=0.1$ for Ridge.
 
-The logistic regression classification problem mock-up is shown in Table \ref{tab:logreg-demo}. The design matrix $\mathbf{X}'$ is generated by adding some noise to an identity matrix of dimension $3 \times 3$, and adding the intercepts. Each of the three cases represent distinct outcomes, $\mathbf{Y}$. To the right in Figure \ref{fig:demo_lin_log_reg} we see that when we use the result of the logistic regression $\mathbf{B}$ to fit to $\mathbf{X}'$, correct outcomes are predicted with high confidence in each case.
+The logistic regression classification mock-up problem is shown in Table \ref{tab:logreg-demo}. The design matrix $\mathbf{X}'$ is generated by adding some noise to an identity matrix of dimension $3 \times 3$, and adding the intercepts. Each of the three cases represent distinct outcomes, $\mathbf{Y}$. To the right in Figure \ref{fig:demo_lin_log_reg} we see that when we use the result of the logistic regression $\mathbf{B}$ to fit to $\mathbf{X}'$, correct outcomes are predicted with high confidence in each case.
 
 \begin{figure}[!htb]
 	\centering
@@ -224,9 +224,9 @@ The logistic regression classification problem mock-up is shown in Table \ref{ta
 
 
 \subsection{Feed-Forward Neural Network}
-The linear and logistic regression methods each have their well-defined set of problems where they come to use; regression and classification, respectively. Artificial Neural Networks is another method, which is can be used for both types of problems, including classification problems with non-linear decision boundaries, like the XOR logical operator, or binary number representation. In this report we study a type of ANN called Feed-Forward Neural Network (FFNN).
+The linear and logistic regression methods each have their well-defined set of problems where they come to use; regression and classification, respectively. Artificial Neural Networks is another method, which can be used for both types of problems, including classification problems with non-linear decision boundaries, like the XOR logical operator, or binary number representation. In this report we study a type of ANN called Feed-Forward Neural Network (FFNN).
 
-Figure \ref{fig:ann-illustration} gives an illustration of a typical FFNN. The layers consist of one or more \textit{nodes} with a \textit{activation function}. Each node-to-node connection has a \textit{weight}, and the input to each node's activation function is the weighted sum of the inputs from all the nodes in the former layer, plus a node-specific \textit{bias}. Except for in the input layer, where the design matrix $\mathbf{X}$ is fed in, all the activation functions are non-linear. This gives the network a highly non-linear behavior. The output of the first hidden layer is thus a non-linear transformation of the information in the input layer, and this process is repeated in the succeeding layers, including the output. At the output layer, the output is evaluated against a suitable cost function, and the error is back-propagated up through the network, which regulates the incremental update of weights and biases. This \textit{training} process is then repeated for a given number of times, or until we have convergence.
+Figure \ref{fig:ann-illustration} gives an illustration of a typical FFNN. The layers consist of one or more \textit{nodes} with a \textit{activation function}. Each node-to-node connection has a \textit{weight}, and the input to each node's activation function is the weighted sum of the inputs from all the nodes in the former layer, plus a node-specific \textit{bias}. Except for in the input layer, where the design matrix $\mathbf{X}$ is fed in, all the activation functions are non-linear. This gives the network a highly non-linear behavior. The output of the first hidden layer is thus a non-linear transformation of the information in the input layer, and this process is repeated in the succeeding layers, including the output. At the output layer, the output is evaluated against a suitable cost function, and the error is back-propagated up through the network, which serves as the input for the incremental update of weights and biases. This \textit{training} process is then repeated for a given number of times, or until we have convergence according to some criteria.
 
 \vspace{5mm}
 
@@ -254,13 +254,13 @@ Here, $\mathbf{B}_1$ is the bias matrix; an $n \times m$ matrix with $\mathbf{b}
 
 Layer 1's activation function output $\mathbf{A}_1$ is given by
 \begin{equation} \label{outputs}
-	\mathbf{A}_1 = f_1(\mathbf{Z}_1) \in \mathbb{R}^{n \times m},
+	 f_1(\mathbf{Z}_1) = \mathbf{A}_1 \in \mathbb{R}^{n \times m},
 \end{equation}
 which is fed into the preceding layer, where this process is repeated. Here we note that this output $\mathbf{A}_1$ is a non-linear transformation of the input $\mathbf{X}$ to the network, which is true also for the remaining layers, including the output layer.
 
 \vspace{5mm}
 
-Let $L$ denote the output layer in our FFNN and $\cal{C}(\mathbf{\theta})$ the cost function of out model, where $\mathbf{\theta}$ may be any variable which influences its value. We evaluate the output of our FFNN against this cost function and update the output layer's weights and biases according to the gradient of the cost function with respect to each set of variables $\mathbf{W}_L, \mathbf{b}_L$;
+Now, let $L$ denote the output layer in our FFNN and $\cal{C}(\mathbf{\theta})$ the cost function of out model, where $\mathbf{\theta}$ may be any variable which influences its value. We evaluate the output of our FFNN against this cost function and update the output layer's weights and biases according to the gradient of the cost function with respect to each set of variables $\mathbf{W}_L, \mathbf{b}_L$;
 \begin{equation} \label{wb-update}
 \begin{aligned}
 		\mathbf{W}_L &\leftarrow \mathbf{W}_L - \eta \frac{\partial \mathcal{C}}{\partial \mathbf{W}_L} \\
@@ -305,7 +305,7 @@ and the rule for updating layer $l$'s weights and biases becomes
 	\mathbf{b}_l &\leftarrow \mathbf{b}_l - \eta \mathbf{\Delta}_l \\
 \end{aligned}.
 \end{equation}
-Here, we have added $\lambda$, the $L_2$ regularization parameter, which follows by the cost function derivation with respect to $\mathbf{W}_L$;
+Here, we have introduced $\lambda$, the $L_2$ regularization parameter, which follows by the cost function derivation with respect to $\mathbf{W}_L$;
 \begin{equation}
 	\mathcal{C}' = \mathcal{C} + \frac{\lambda}{2} ||\mathbf{W}_L||_2^2 \rightarrow \frac{\partial \mathcal{C}'}{\partial \mathbf{W}_L} = \frac{\partial \mathcal{C}}{\partial \mathbf{W}_L} + \lambda \mathbf{W}_L.
 \end{equation}
@@ -441,7 +441,7 @@ For the Feed-Forward Neural Network we will study its performance on all of thes
 
 I have written all code in Python, with extensive use of the \lstinline|numpy| and \lstinline|sklearn| modules.
 
-To ensure that the results are representative and that we are not just \textit{getting lucky}, I have as a standard used 5-fold cross-validation in the generation of all results.
+To ensure that the results are representative and that we are not just "getting lucky", I have as a standard used 5-fold cross-validation in the generation of all results.
 
 \subsection{Linear Regression with Stochastic Gradient Descent}
 %Perform an analysis of the results for OLS and Ridge regression as function of the chosen learning rates, the number of mini-batches and epochs as well as algorithm for scaling the learning rate.
@@ -460,15 +460,15 @@ where we have also added some noise $\epsilon \sim \mathcal{N}(0, \sigma^2)$. Ev
 \end{equation}
 See \cite{project1} for details about random sampling and the design matrix for polynomial fit in two variables.
 
-Figure \ref{fig:ols_sgd} shows the test MSEs with increasing model complexity for OLS solved with SGD. The blue-shaded area in the bottom of each pane indicates the noise $\epsilon$ in the Franke function samples, and denotes the lower limit of any model MSE. We see that SGD has some of the same effect on overfitting as Ridge and LASSO in that it lets us increase model complexity beyond the point where the traditional OLS with matrix inversion blows up (purple dotted line). We see that OLS with SGD also blows up, but that is mainly caused by the learning rate $\eta$, and not model complexity. This becomes evident when we consider that the test and train MSEs follow each other closely, even beyond the best fit complexity (dotted lines). For regular OLS, test and train MSEs would split paths at that point at the latest.
+Figure \ref{fig:ols_sgd} shows the test MSEs with increasing model complexity for OLS solved with SGD. The blue-shaded area in the bottom of each pane indicates the noise $\epsilon$ in the Franke function samples, and denotes the lower limit of any model MSE. We see that SGD has some of the same effect on overfitting as Ridge and LASSO in that it lets us increase model complexity beyond the point where the traditional OLS with matrix inversion blows up (purple dotted line). We see that OLS with SGD also blows up, but that is mainly caused by the learning rate $\eta$, and not model complexity. This becomes evident when we consider that the test and train MSEs follow each other closely, even beyond the best fit complexity (dotted lines). For regular OLS, test and train MSEs would part ways at that point, at the latest.
 
 Model complexity also plays a role, though, as we see in the upper right pane in the figure. For $\eta = 2.5 \cdot 10^{-1}$, we get the best fit for the 5th degree polynomial, and steadily worsening overfit beyond that. With this data set, increasing the number of epochs and the batch size helps on this tendency, as we see in the remaining panes. Increasing the epochs from 50 to 250, as we see in the lower right pane dampens it a great deal, but the green $\eta = 2.5 \cdot 10^{-1}$ curve still bends upwards steeply after the 10th polynomial. Increasing the mini batch size from 10 to 50 flattens the curve completely, but hurts MSE somewhat, as we see in the upper left pane. We perform fewer iterations with batch size 50 than with 10, and this could be the cause for the worse fit. The last pane, bottom right, shows that increasing both epochs and mini batch size gives us an almost flat development after the best fit. None of this beats traditional OLS, however, which has the best fit overall as the dotted purple line shows.
 
 \vspace{5mm}
 
-In the OLS case, increasing the number of epochs or the batch size could not help the $\eta = 4.0 \cdot 10^{-1}$ case at all, it seemed. Adding a regularization parameter $\gamma$ to penalize the value of the coefficient estimates $\beta_j$ should help, though. Before we do that, however, we need to scale the design matrix feature-wise by centering them and dividing by the standard deviation.
+In the OLS case, increasing the number of epochs or the batch size could not help the $\eta = 4.0 \cdot 10^{-1}$ case at all, it seemed. Adding a regularization parameter $\lambda$ to penalize the value of the coefficient estimates $\beta_j$ should help, though. Before we do that, however, we need to scale the design matrix feature-wise by centering them and dividing by the standard deviation.
 
-In Figure \ref{fig:ridge_sgd}, which shows the same problem as above solved with the Ridge SGD method, we see the effect of adding a small $\gamma = 1.0 \cdot 10 ^{-7}$. The point where the $\eta = 4.0 \cdot 10^{-1}$ case blows up is pushed from the 5th to the 11th polynomial, and overall, MSE and $R_2$ is improved ever so slightly. Again we see that increasing the batch size from 10 to 50 has a dampening effect.
+In Figure \ref{fig:ridge_sgd}, which shows the same problem as above solved with the Ridge SGD method, we see the effect of adding a small $\lambda = 1.0 \cdot 10 ^{-7}$. The point where the $\eta = 4.0 \cdot 10^{-1}$ case blows up is pushed from the 5th to the 11th polynomial, and overall, MSE and $R_2$ is improved ever so slightly. Again we see that increasing the batch size from 10 to 50 has a dampening effect.
 
 The development of the $\eta = 2.5 \cdot 10^{-1}$ case with 50 epochs in the left column of the figure is somewhat surprising. The model suddenly blows up after the 11th polynomial, the reason for which is unclear. Increasing the batch size to 50 prevents this, as we see to the right.
 
@@ -509,7 +509,7 @@ As an alternative or addition to $L_2$ regularization, we can also play with the
 
 The activation function in the output layer is the sigmoid function, which is limited to $[0,1]$. See Table \ref{tab:activation-funcs}. To approximate the response variables, we need to scale them to the same range $[0,1]$. We do this by first adding the minimum sample value to all response variables and then dividing by the maximum value. Likewise we have to center and scale the design matrix, since we will use $L_2$ regularization.
 
-Figure \ref{fig:ffnn_reg_sigmoid} shows the $R_2$ scores for an $\eta$-vs-$\lambda$ grid search with a Feed-Forward Neural Network. We have used the same Franke function samples as in the preceding discussion on OLS and Ridge; 250 random samples with some noise. The design matrix is generated by a 12th degree polynomial in two variables, meaning that it has $p = 78$ features. The network thus has 78 nodes in the input layer, and we have used the same number in the single hidden layer. The hidden layer activation function is sigmoid, which is the same as the single-node output. We thus have 78+1 biases and 78*79 weights to determine, 6241 parameters all-in-all. The initialization is done by random values in the range $[0,1]$ for the weights, and the biases are all set to 0.01.
+Figure \ref{fig:ffnn_reg_sigmoid} shows the $R_2$ scores for an $\eta$-vs-$\lambda$ grid search with a Feed-Forward Neural Network. We have used the same Franke function samples as in the preceding discussion on OLS and Ridge; 250 random samples with some noise. The design matrix is generated by a 12th degree polynomial in two variables, meaning that it has $p = 78$ features. The network thus has 78 nodes in the input layer, and we have used the same number in the single hidden layer. The hidden layer activation function is sigmoid, which is the same as the single-node output. We thus have $78+1$ biases and $78 \times 79$ weights to determine, 6241 parameters all-in-all. The initialization is done by random values in the range $[0,1]$ for the weights, and the biases are all set to 0.01.
 
 We see in the lower left pane of the figure that the best $R_2$ score 0.55 occurs for 250 epochs and mini batch size 10, with $\eta = 3.0$ and $\lambda = 1.0 \cdot 10^{-3}$. This is quite poor compared with the performance of OLS and Ridge in the previous section, and even poorer when compared with traditional OLS, which achieved an $R_2$ of 0.69. For the other sets of epochs and batch sizes, performance is quite low; barely tipping over $R_2 = 0$, which means that generally we would be better off by simply approximating the function by taking the mean of the samples.
 
@@ -546,7 +546,7 @@ In Figure \ref{fig:ffnn_breast_cancer} we see the result of a $\eta$-vs-$\lambda
 
 \vspace{5mm}
 
-Next, let's evaluate our FFNN's performance on \lstinline|sklearn|'s reduced version of the MNIST dataset of handwritten numbers 0 to 9 \cite{skl-datasets}. The full, more expansive dataset is freely available from from the MNIST website at. See \cite{mnist}. Some samples from the dataset which we will use here are shown in Figure \ref{fig:mnist_digits}. 
+Next, let's evaluate our FFNN's performance on \lstinline|sklearn|'s reduced version of the MNIST dataset of handwritten numbers 0 to 9 \cite{skl-datasets}. The full, more expansive dataset is freely available from from the MNIST website. See \cite{mnist}. Some samples from the dataset which we will use here are shown in Figure \ref{fig:mnist_digits}. 
 
 The dataset contains 1797 pictures, each with $8 \times 8$ pixels with a numerical value 0 to 16. The design matrix thus has shape $1797 \times 64$, and the one-hot representation of the reponse variables becomes a $1797 \times 10$ matrix with a single 1 in each row, and the rest 0s.
 
@@ -622,7 +622,7 @@ At last, let's investigate the performance of logistic regression on \lstinline|
 % - Try as far as possible to present perspectives for future work
 % - Try to discuss the pros and cons of the methods and possible improvements
 
-We have seen that linear regression solved with SGD performs worse than the traditional OLS and Ridge methods with matrix inversion. However, SGD has some of the same qualities as Ridge and LASSO in that it prevents overfitting of the model, which allows us to increase model complexity beyond the point where OLS blows up. Linear regression with OLS may also blow up when we pick a learning rate and gradually increase model complexity, but not necessarily due to overfitting. The model becomes unstable because the maximum eigenvalue of the Hessian matrix, $\lambda_{max}$, increases in value as the model complexity increases, which lets the model blow up when $\eta \ge 2/\lambda_{max}$. For linear regression, the Hessian matrix is given by $\mathbf{H} = \mathbf{X}^\intercal \mathbf{X} + \lambda \mathbf{I}$, and this addition of the $L_2$ regularization parameter $\lambda$ reduces $\lambda_{max}$, which allows us to increase the learning rate. A very clear indication of this is the tendency of the train and test MSEs to follow each other closely, also after the model blows up. This shows that the model does not suffer from overfitting.
+We have seen that linear regression solved with SGD performs worse than the traditional OLS and Ridge methods with matrix inversion. However, SGD has some of the same qualities as Ridge and LASSO in that it prevents overfitting of the model, which allows us to increase model complexity beyond the point where OLS blows up. Linear regression with OLS may also blow up when we pick a learning rate and gradually increase model complexity, but not necessarily due to overfitting. The model becomes unstable because the maximum eigenvalue of the Hessian matrix, $\lambda_{max}$, increases in value as the model complexity increases, which lets the model blow up when $\eta \ge 2/\lambda_{max}$. For linear regression, the Hessian matrix is given by $\mathbf{H} = \mathbf{X}^\intercal \mathbf{X} + \lambda \mathbf{I}$. This addition of the $L_2$ regularization parameter $\lambda$ will also increase $\lambda_{max}$, but not enough to limit the general \textit{shrinking} effect that $L_2$ regularization has on the coefficient values. This, it seems, allows us to increase the learning rate. A very clear indication of that it is not overfitting which makes the model blow up is the tendency of the train and test MSEs to follow each other closely, also after the model blows up. If the model suffered from overfitting, train and test MSEs would part ways here.
 
 As for the linear regression with SGD, our neural network also performed quite poorly on the regression problems that we have studied -- worse than linear regression with SGD. This might be for many reasons; non-optimal selection of hyperparameters such as number of epochs, batch size, regularization, learning rate or learning schedule. We studied some of these, but in addition we could also tweak the initialization of biases and weights (which we didn't touch at all), further investigate a mix of activation functions, and of course the network's architecture. The potential for optimization seems to be almost infinite, and therefore beyond what we would investigate in this report.
 
@@ -630,9 +630,9 @@ We have shown that the Feed-Forward Neural Network developed for this report cou
 
 Where the FFNN did excel was when it was applied on the multinomial classification problem with the simplified MNIST dataset \cite{skl-datasets}. It reached 98 \% accuracy, which was ascertained by 5-fold cross validation.
 
-On the multinomial problem, logistic regression also performed well, however. And, importantly, training a relatively shallow and narrow neural network on even a quite limited dataset such as this (1797 samples with 64 features) takes is computationally demanding. Here, logistic regression with SGD has a great advantage, provided that the decision boundary is linear, of course.
+On the multinomial problem, logistic regression also performed well, however. And, importantly, training a relatively shallow and narrow neural network on even a quite limited dataset such as this (1797 samples with 64 features) is computationally demanding. Here, logistic regression with SGD has a great advantage since it is much less computationally demanding, provided that the decision boundary is linear, of course.
 
-Another advantage of logistic regression over neural networks is that it generates a model which is interpretable for the human, as we saw for the breast cancer data. Logistic regression gave very valuable insights about the data that we fed into it.
+Another advantage of logistic regression over neural networks is that it generates a model which is interpretable for the human, as we saw for the breast cancer data. Logistic regression gave insights about the data that we fed into it which could be valuable to a professional looking at the results.
 
 \vspace{5mm}
 
@@ -640,7 +640,7 @@ The most important suggestion for future studies is to investigate the insensiti
 
 Further, the neural network's poor performance on the regression problem came as a bit of a surprise. Further insights into the reason for this would be valuable.
 
-\clearpage
+%\clearpage
 \bibliographystyle{unsrt}
 \bibliography{project2.bib}
 \end{document}
