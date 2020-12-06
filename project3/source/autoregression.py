@@ -1,7 +1,8 @@
 '''Methods for autoregression with exogenous signals (ARX modelling).'''
 
 import utils
-
+import numpy as np
+import pandas as pd
 
 def shifts(df, shift_max):
     '''Adds to df its first column shifted by 1,2,...,shift_max forwards in time. The new columns are named "<first_col_name><shift>". Returns the modified pd.DataFrame.'''
@@ -17,7 +18,12 @@ def shifts(df, shift_max):
 def make_design_matrix(aux_df, current_df, temp_df, shift_max):
     '''Makes design matrix from the exogenous signals in aux_df and current_df and the target temp_df, with shift_max shifts in the temperatures. All rows containing np.NaN are dropped from the design matrix. Returns pd.DataFrames with design matrix and aligned targets (X, y).'''
     X = aux_df.copy()
-    X = X.join(current_df, how='outer')
+    X['aux_off'] = 1 - aux_df
+
+    X = X.join(current_df, how='outer')  # Loading
+    X['I2'] = current_df**2  # Power dissipation
+    # X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
+    
     X = X.join(shifts(temp_df, shift_max), how='outer')
     X = X.dropna()
     

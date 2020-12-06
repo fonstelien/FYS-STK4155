@@ -14,10 +14,11 @@ def parse_file(fname, col_name=None):
     return df
 
 
-def scale(df, **kwargs):
+def scale(df, cols=None, **kwargs):
     '''Wrapper for skl.preprocessing.StandardScaler. kwargs are forwarded. Does fit_transform() on all columns in df.'''
     scaler = skl.preprocessing.StandardScaler(**kwargs)
-    for col in df.columns:
+    cols = cols if cols else df.columns
+    for col in cols:
         feature = df[col].to_numpy()
         feature = feature.reshape(-1,1)
         feature = scaler.fit_transform(feature)
