@@ -22,7 +22,7 @@ def make_design_matrix(aux_df, current_df, temp_df, shift_max):
 
     X = X.join(current_df, how='outer')  # Loading
     X['I2'] = current_df**2  # Power dissipation
-    # X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
+    X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
     
     X = X.join(shifts(temp_df, shift_max), how='outer')
     X = X.dropna()
