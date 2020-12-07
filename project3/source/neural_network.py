@@ -6,7 +6,8 @@ import pandas as pd
 def make_design_matrix(aux_df, current_df, temp_df):
     ''''''
     X = aux_df.copy()
-    X = X.join(current_df, how='outer')  # Loading
+    X = X.join(current_df**2, how='outer')
+    
     X = X.join(temp_df, how='outer')
     X = X.dropna()
     
