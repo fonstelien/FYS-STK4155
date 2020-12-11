@@ -13,6 +13,14 @@ def parse_file(fname, col_name=None):
         df = df.rename(columns={'Value':col_name})
     return df
 
+def align(*dfs):
+    '''Aligns dfs pd.DataFrames and drops any rows with missing values.'''
+    aligned = dfs[0].copy()
+    for df in dfs[1:]:
+        aligned = aligned.join(df, how='outer')
+    aligned = aligned.dropna()
+    return aligned
+
 
 
 def sample_gaps(df):

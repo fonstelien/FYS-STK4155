@@ -20,10 +20,11 @@ def shifts(df, shift_max, prefix='temp__'):
 def prep_current_model_dataset(aux_df, current_df, temp_df, shift_max):
     '''Preps dataset for the current-based autoregression model. Args are the exogenous signals aux_df and current_df and the target temp_df. All rows containing np.NaN are dropped from the dataset. Returns pd.DataFrames (X,y) where X contains shift_max shifts in the temperatures for autoregression and y contains the target temperatures.'''
     X = aux_df.copy()
-    X['aux_off'] = 1 - aux_df
-
+    X['intercept'] = 1
     X = X.join(current_df, how='outer')  # Loading
     X['I2'] = current_df**2  # Power dissipation
+
+    # X['I2_inv'] = (1 + current_df**3)*current_df 
     # X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
     
     X = X.join(shifts(temp_df, shift_max), how='outer')
@@ -39,8 +40,8 @@ def prep_current_model_dataset(aux_df, current_df, temp_df, shift_max):
 def prep_current_temp_model_dataset(aux_df, current_df, temp_df, tempX_df, tempY_df, shift_max):
     '''Preps dataset for the current-temperature-based autoregression model. Args are the exogenous signals aux_df and current_df and the target temp_df, in addition to exogenous signals tempX_df and tempY_df, which are the temperatures of the other transformer coils. All rows containing np.NaN are dropped from the dataset. Returns pd.DataFrames (X,y) where X contains shift_max shifts in the temperatures for autoregression and y contains the target temperatures.'''
     X = aux_df.copy()
-    X['aux_off'] = 1 - aux_df
-
+    X['intercept'] = 1
+    
     X = X.join(current_df, how='outer')  # Loading
     X['I2'] = current_df**2  # Power dissipation
     # X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
