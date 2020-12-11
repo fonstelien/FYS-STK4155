@@ -86,11 +86,11 @@ For the design, training and testing of our transformer temperature model, we ha
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=1\linewidth]{./figs/temp-current-aux.png}
-	\caption{Typical operational profile of the transformer with winding temperature (top), current (middle) and running status of the cooling fans (bottom). The temperature-dependency on current is seemingly self-evident, but the cooling fan also plays a role as we see from the increase in temperature as both current and cooling fans are turned off.}
+	\caption{Typical operational profile of the transformer with winding temperature (top), current (middle) and running status of the cooling fans (bottom, 1 = ON, 0 = OFF). The temperature-dependency on current is seemingly self-evident, but the cooling fan also plays a role as we see from the increase in temperature as both current and cooling fans are turned off.}
 	\label{fig:temp-current-aux}
 \end{figure}
 
-The temperature in the three phase windings should not deviate much from each other in a well-designed transformer, but there will always be small differences, as we see in Figure \ref{fig:all-winding-temperature-over-time}. The 2-4 kelvin difference is probably caused by some variation in the air flow through the windings due to physical location within the enclosure and different shape of the ferromagnetic core at the center of the windings.
+The temperature in the three phase windings should not deviate much from each other in a well-designed transformer, but there will always be small differences, as we see in Figure \ref{fig:all-winding-temperature-over-time}. The 2-4 kelvin difference is caused by some variation in the air flow through the windings due to physical location within the enclosure and different shape of the ferromagnetic core at the center of the windings. Typically, the center winding will have slightly higher temperature than the others, corresponding to the $V$ winding in Figure \ref{fig:all-winding-temperature-over-time}. Another interesting observation is that the winding temperature curve turns upwards in the time after the cooling fans are shut off. Heat is coming into the windings, probably from the HV windings (we are looking at LV temperatures). Due to the higher demands to electrical insulation and therefore more complex construction, the HV windings are not monitored.
 
 \begin{figure}[!h]
 	\centering
@@ -136,7 +136,7 @@ where $K_A$ is similar to $K_W$, and $T_A$ is the ambient temperature. Heat tran
 	\dot{Q}_T = C \dot{T} + \dot{Q}_W + \dot{Q}_A.
 \end{equation}
 Since we are dealing with time series here, it is natural to approximate $\dot{T}$ by its Taylor expansion $\dot{T}_{(t)} = (T_{(t)} - T_{(t-\Delta t)})/ \Delta t$. At time $t$, Equation (\ref{eq:heat-flow-compact}) solved for temperature $T_{(t)}$ then becomes
-\begin{equation} \label{eq:heat-flow-expanded-t}
+\begin{equation} \label{eq:physical-overall}
 	T_{(t)} = \frac{\frac{C}{\Delta t} T_{(t-\Delta t)} + uK_W T_W + K_A T_A + I^2 (R - \alpha T_0)}{\frac{C}{\Delta t} + uK_W + K_A - I^2 \alpha}.
 \end{equation}
 
@@ -146,14 +146,65 @@ At this point it is tempting to let the resistance temperature coefficient $\alp
 In a healthy transformer, the temperature in any of the three windings will be closely linked to the temperature of the two others. Since the the electric impedance must be equal between the windings in order to maintain a balanced system voltage, we can assume that the electric losses will also largely be equally distributed in a well-designed transformer. Any difference in temperature is therefore likely to stem from small differences in the air flow through each winding. These assumptions correspond well with what we see in the winding temperature plots in Figure \ref{fig:all-winding-temperature-over-time}.
 
 We will assume a linear relationship between the temperatures;
-\begin{equation}
+\begin{equation} \label{eq:physical-relative}
 	T_X = K_{XY} T_Y + K_{XZ} T_Z,
 \end{equation}
-where $X,Y,Z$ may represent any one of the phase windings $U,V,W$. 
+where $X,Y,Z$ may represent any one of the phase windings $U,V,W$. Given a time series with all three signals, this model can be solved easily with OLS.
 
-\subsection{Second Approach: An Autoregressive Model} \label{sec:autoregressive-model}
+\subsection{Second Approach: Autoregressive Models} \label{sec:autoregressive-model}
+Autoregression (AR) is a statistical method made specifically for time series. It is based on the assumption that the $k$th value $y_{(k)}$ of a time series $y = \{y_{(0)}, y_{(1)}, ..., y_{(k)}, ...\}$ can be explained by a linear, weighted sum of its $p$ preceding values. Hence its name auto (self) regression. The process can be described as
+\begin{equation} \label{eq:ar-basis}
+	y_{(k)} = w_1 y_{(k-1)} + w_1 y_{(k-2)} + \cdots + w_p y_{(k-p)} + \varepsilon_{(k)} = \mathbf{w} \mathbf{y}_p + \varepsilon_{(k)}
+\end{equation}
+where the $\mathbf{w} = \{w_{(i)}\}$ are the weights, $\mathbf{y}_p = \{y_{(k-i)}\}$ are $y_{(k)}$'s $p$ preceding values, and $\varepsilon_{(k)} \sim \mathcal{N}(0,\sigma^2)$ is the process' noise. A model with $p$ terms such as Equation (\ref{eq:ar-basis}) would be referred to as a $p$th order AR model, or simply AR($p$). We can also introduce a vector of \textit{exogenous} variables $\mathbf{x}$ into this model -- that is; variables which are not decided within the system described by $y$. This model is sometimes called the ARX model and takes the form
+\begin{equation} \label{eq:arx-basis}
+	y_{(k)} = \mathbf{w}_y \mathbf{y}_p + \mathbf{w}_x \mathbf{x} + \varepsilon_{(k)}.
+\end{equation}
+Here, $\mathbf{x} = \{x_{i(k)}\}$, where $x_{i(k)}$ represents the $k$th value of the $i$th exogenous variable, and $\mathbf{w}_x$ are their weights. The "X" in ARX is often dropped, so the systems described in Equations (\ref{eq:ar-basis}) and (\ref{eq:arx-basis}) are both referred to as AR models. 
 
-\subsection{Third Approach: A Neural Network Model} \label{sec:neural-model}
+For the AR model to work, the time series must meet two requirements; it must be \textit{stationary} and \textit{ergodic}. Stationarity is met if the time series does not have an underlying trend, meaning that the expectation value of any two series of samples $y_1 = \{y_{(a)}, y_{(a+1)}, ..., y_{(b)}\}$, $y_2 = \{y_{(c)}, y_{(c+1)}, ..., y_{(d)}\}$ must be constant;
+\begin{equation}
+	\mathbb{E}(y_1) = \mathbb{E}(y_2) \Rightarrow \frac{1}{b-a} \sum_{i=a}^{b} y_{(i)} = \frac{1}{c-d} \sum_{i=c}^{d} y_{(i)}.
+\end{equation}
+The other criteria, that of ergodicity, is met if the \textit{autocovariance} falls to zero;
+\begin{equation}
+	\lim\limits_{j \rightarrow \infty} \mathrm{cov}(y_{(t)}, y_{(t-j)}) = 0.
+\end{equation}
+Relating this to Equations (\ref{eq:ar-basis}) and (\ref{eq:arx-basis}), this means that $w_q \approx 0$ for $q > p$. 
+
+The AR model weights $\mathbf{w}_y, \mathbf{w}_x$ are found by linear regression methods, usually OLS. Refer to \cite{shumway2017} for a thorough treatment of statistical time series analysis.
+
+As for the physical in the previous section, we will first make an Overall Temperature Model for the predicted temperature of the transformer based on the operation, and then on the Relative Temperature Model for deviation between the windings.
+
+\subsubsection{AR Model: Overall Temperature} \label{sec:ar-model-overall}
+The autoregressive model encompasses a time-difference equation for the signal we want to model, and is as such a good starting point for modelling the overall transformer temperature, as shown in Equation (\ref{eq:physical-overall}). Following the discussion in Section \ref{sec:physical-model-overall}, we should expect that the exogenous variables going into the AR model in Equation (\ref{eq:arx-basis}) would be at least the current $I$ and the status of the cooling fans $u$, such that the temperature $T$ at time $t$ could be modelled as
+\begin{equation} \label{eq:ar-overall-0}
+	T_{(t)} = \sum_{i=1}^{p} w_i T_{(t-i)} + w_u u_{(t)} + w_{I} I_{(t)}.
+\end{equation}
+It would then be up to the $p$ time-difference terms to make up for the variables in Equation (\ref{eq:arx-basis}) which are not contained within $u,I$ during model fitting time -- that is; the water and room temperatures $T_W$ and $T_A$, in addition to the non-linear power loss due to $\alpha$. The cooling fan status is binary (ON/OFF), and as we observed from the winding temperature curves in in Figure \ref{fig:temp-current-aux}, heat is flowing into the winding for some time after the transformer and the cooling fans are shut down. To account for this in Equation (\ref{eq:ar-overall-0}), we can add a term $u' = 1 - u$, such that
+\begin{equation}
+	w_u u_{(t)} + w_{u'} u'_{(t)} = (w_u - w_{u'})u + w_{u'},
+\end{equation}
+which really amounts to adding an intercept, which we will denote by $w_0$. Further, we know that temperature is more likely to depend on the power loss in the windings, which is closer related to the current squared; $I^2$. Replacing $I$ with this yields the equation for our AR($p$) model
+\begin{equation} \label{eq:ar-overall-1}
+	T_{(t)} = w_0 + \sum_{i=1}^{p} w_i T_{(t-i)} + w_u u_{(t)} + w_{I} I^2_{(t)}.
+\end{equation}
+The weights and the model order $p$ will then be determined by OLS in an iterative process.
+
+\subsubsection{AR Model: Relative Temperature} \label{sec:ar-model-relative}
+For the relative temperature model we already derived the exogenous variables in Section \ref{sec:physical-model-relative}. We will simply install the terms in Equation (\ref{eq:physical-relative}) in the general AR model in Equation (\ref{eq:arx-basis});
+\begin{equation} \label{eq:ar-relative}
+	T_{(t)} = \sum_{i=1}^{p} w_i T_{(t-i)} + w_X T_{X(t)} + w_Y T_{Y(t)}.
+\end{equation}
+Again, we expect the $p$ time-difference terms to make up for any variables not contained within the temperatures of the other windings, $T_X, T_Y$.
+
+
+
+\subsection{Third Approach: Recurrent Neural Network Model} \label{sec:neural-model}
+
+\subsubsection{RNN Model: Overall Temperature} \label{sec:rnn-model-overall}
+
+\subsubsection{RNN Model: Relative Temperature} \label{sec:rnn-model-relative}
 
 \subsection{Data Preparation} \label{sec:data-prep}
 
