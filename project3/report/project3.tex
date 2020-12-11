@@ -57,23 +57,21 @@
 % intro to insulation and temperature
 % intro to transformers
 
-Electric machines are highly reliable when properly designed and maintained. They are the workhorses in any industrial process, as well as the actuator in safety-critical functions, and failure may have both economic and physical consequences in the form of downtime and personnel injury. Ensuring proper function of the machinery is a major cost driver in industry -- dedicated technicians are employed to execute detailed maintenance schedules while others log and monitor performance indicators like temperature and vibration. Improving and automating such procedures is a large part of what \textit{Industry 4.0} is about. \textit{Digital twins} of the machines can be used to predict faults which are developing too slowly to be noticed, or which may not even be detectable with regular instrumentation. 
+Electric machines are highly reliable when properly designed and maintained. They are the workhorses in any industrial process, as well as the actuator in safety-critical functions, and failure may have both economic and physical consequences in the form of production downtime and personnel injury. Ensuring proper function of the machinery is a major cost driver in industry -- dedicated technicians are employed to execute detailed maintenance schedules while others log and monitor performance indicators like temperatures and vibration levels. Improving and automating such procedures is a large part of what \textit{Industry 4.0} is about. \textit{Digital twins} of the machines can be used to predict faults which are developing too slowly to be noticed, or which may not even be detectable with regular instrumentation. 
 
-Machine learning methods play a vital part in developing digital twins and in this report we will see how a simple model for condition monitoring of the cooling efficiency of an electric power transformer can be created by the use of traditional autoregression (AR) and neural networks. Even small increases in a transformer's operating temperature may have severe effects on the lifetime of its electrical insulation, and ensuring that the cooling system performs as designed is vital for reliability and performance of the transformer. We will create model of the transformer which lets us evaluate the cooling system's performance under dynamic operating conditions based only on a few input measurements which are normally monitored in a standard plant automation and control system. The performance at the time of model creation will serve as the baseline against which future performance will be measured.
+Machine learning methods play a central part in the development of digital twins. In this report we will see how a simple model for condition monitoring of the cooling system of an electric power transformer can be created by the use of traditional autoregression and more modern neural networks. Even small increases in a transformer's operating temperature may have severe effects on the lifetime of its electrical insulation, and ensuring that the cooling system performs as designed is vital for reliability and performance of the transformer. We will create model of the transformer which lets us evaluate the cooling system's performance under dynamic operating conditions based only on a few input measurements which are normally monitored in a standard plant automation and control system. The performance at the time of model creation will serve as the baseline against which future performance will be measured.
 
-
-Structure of report [....], but first a short review of the basics of power transformers.
-
+For developing this model we have available a dataset containing operational data of a power transformer -- an introduction of which is given further down in Section \ref{sec:case-description}. STRUCTURE OF REPORT [....], but first a short review of some power transformer essentials.
 
 
 \subsection{Electric Power Transformer Basics} \label{sec:transformers}
-Electrical power distribution networks usually have several voltage levels, and its the power transformer's job to \textit{transform} the power from one voltage level to another. In a three-phase power system, each phase will be connected to separate transformer \textit{windings} -- one per phase for the high voltage (HV) side and one for the low voltage (LV) side. The HV and LV windings of each phase are usually installed like concentric cylinders with the ferromagnetic core in the middle for magnetic coupling between them. The phase windings are physically separated from each other, but they are usually installed together either inside a tank containing cooling oil, or an air-filled enclosure, like the one we will treat in this report. 
+Electrical power distribution networks usually have several voltage levels, and it is the power transformer's job to \textit{transform} the power from one voltage level to another. In a three-phase power system, each phase will be connected to separate transformer \textit{windings} -- one per phase for the high voltage (HV) side and one per phase for the low voltage (LV) side. The HV and LV windings of each phase are constructed like concentric cylinders with the ferromagnetic core in the middle for magnetic coupling between them. The phase windings again are physically separated from each other, but they are usually installed together either inside a tank containing cooling oil; or an air-filled enclosure, like the one we will treat in this report. 
 
-A typical example is shown in Figure \ref{fig:dry-transformer}. The three phase windings, denoted $U, V, W$, are the red barrel-like structures seen inside the (opened) enclosure. The windings, usually made of copper or aluminium, develop heat when they conduct current. The phase windings are therefore constructed with a gap between the concentric HV and LV winding to allow air to flow between them for cooling. During operation the transformer is fully enclosed and air is circulated by the cooling fan motors, which we see on the outer wall to the upper left (blue-gray). The air is forced through the windings by the horizontal separation plate at the bottom of the windings. The heat dissipated by the windings is drawn out of the system by an air-water heat exchanger, which is located below the motors close to the floor. 
+A typical example of an air-cooled transformer is shown in Figure \ref{fig:dry-transformer}. The three phase windings, denoted $U, V, W$, are the red barrel-like structures seen inside the (opened) enclosure. The windings, usually made of copper or aluminium, develop heat when they conduct current. The phase windings are therefore constructed with a gap between the concentric HV and LV winding to allow air to flow between them for cooling. During operation the transformer is fully enclosed and air is circulated by the cooling fan motors, which we see on the outer wall to the upper left (blue-gray). The air is forced through the windings by the horizontal separation plate located close to the bottom of the windings. The heat dissipated by the windings is drawn out of the system by an air-water heat exchanger, which is located below the motors close to the floor. 
 
-The winding insulation on this type of air-cooled transformers is usually made of epoxy, which is mechanically robust and has good electric insulating properties. Epoxy consists of long hydrocarbon chains which has a temperature-dependent degradation rate, such that a 6 kelvin increase in temperature approximately halves the useful lifetime of the material (\textit{Arrhenius' law}). Expected lifetime under nominal operating conditions is 180.000 hours ($\sim 20$ years), which will of course vary greatly between manufacturers and even otherwise identical units from the same manufacturer \cite{iec60076-12}.
+The winding insulation on this type of transformers is usually made of epoxy, which is mechanically robust and has good electric insulating properties. Epoxy consists of long hydrocarbon chains which has an exponential temperature-dependent degradation rate; a temperature increase of 6 kelvin approximately halves the useful lifetime of the material (\textit{Arrhenius' law}), so operational temperature is a major design parameter. Expected lifetime under nominal operating conditions is 180.000 hours ($\sim 20$ years) -- a number which however varies greatly between manufacturers and even otherwise identical units from the same manufacturer \cite{iec60076-12}.
 
-The operation of the transformer is monitored by reading phase currents and winding temperatures, as well as the operational status of auxiliary systems like cooling fans. The measurements are transmitted to the plant automation and control system which monitors the condition of the transformer together with other equipment in the plant, and which may also store measurements digitally on a server. See \cite{hubert2002} for an easy-to-read introduction to electric machines.
+The operation of the transformer is monitored by reading phase currents and winding temperatures, as well as the operational status of auxiliary systems like cooling fans. The measurements are transmitted to the plant automation and control system which monitors the condition of the transformer together with other equipment in the plant, and which may also store measurements digitally on a server. Refer to \cite{hubert2002} for an easy-to-read introduction to electric machines.
 
 \begin{figure}[!h]
 	\centering
@@ -82,56 +80,76 @@ The operation of the transformer is monitored by reading phase currents and wind
 	\label{fig:dry-transformer}
 \end{figure}
 
+\subsection{Case Description} \label{sec:case-description}
+For the design, training and testing of our transformer temperature model, we have a dataset provided by ABB AS \cite{abb-url}. The dataset contains operational data from a 12 MVA (mega volt-amperes) transformer as a time series stretching over approximately 14 months. Sampling rates are between 1 second and 1 minute, depending on the signal. The transformer serves an industrial process with a highly fluctuating demand; typically 2 hours of service at 40-80 \% load, with 30 minutes breaks in-between at 0 \%, as well as a 6 hours break at night-time. The cooling fans are usually turned off between the service intervals, but with a delay. See Figure \ref{fig:temp-current-aux}.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/temp-current-aux.png}
+	\caption{Typical operational profile of the transformer with winding temperature (top), current (middle) and running status of the cooling fans (bottom). The temperature-dependency on current is seemingly self-evident, but the cooling fan also plays a role as we see from the increase in temperature as both current and cooling fans are turned off.}
+	\label{fig:temp-current-aux}
+\end{figure}
+
+The temperature in the three phase windings should not deviate much from each other in a well-designed transformer, but there will always be small differences, as we see in Figure \ref{fig:all-winding-temperature-over-time}. The 2-4 kelvin difference is probably caused by some variation in the air flow through the windings due to physical location within the enclosure and different shape of the ferromagnetic core at the center of the windings.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/all-winding-temperature-over-time.png}
+	\caption{Development of the temperatures in windings $U,V,W$ of a healthy transformer. The temperatures follow each other closely only deviate a few degrees because of small difference in air flow through each winding.}
+	\label{fig:all-winding-temperature-over-time}
+\end{figure}
+
 
 \section{Methods} \label{sec:methods}
 % - Describe the methods and algorithms
 % - You need to explain how you implemented the methods and also say something about the structure of your algorithm and present some parts of your code
 % - You should plug in some calculations to demonstrate your code, such as selected runs used to validate and verify your results. The latter is extremely important!! A reader needs to understand that your code reproduces selected benchmarks and reproduces previous results, either numerical and/or well-known closed form expressions.
 
-For the design, training and testing of our transformer temperature model, we have a dataset provided by ABB AS \cite{abb-url}. The dataset contains operational data from a 12 MVA (mega volt-amperes) transformer as a time series stretching over approximately 14 months. Sampling rates are between 1 second and 1 minute, depending on the signal.
-
 Failure or degradation of the transformer cooling system may take one of two forms -- either as an overall problem, which will present itself as increased operation temperature of the whole transformer; or as a failure affecting only one transformer phase winding, giving increased temperature in that winding. 
 
-Common causes for the first would be reduced air flow due to a damaged impeller or oxidation inside the heat exchanger, which will reduce its efficiency. Especially oxidation is a slowly-developing fault which may be difficult to spot. To discover such developments, we need a fine-tuned model which precisely predicts the winding temperature in a healthy transformer in any operation condition. Deviation in actual temperature from the predicted temperature will then be indicative of a fault. For this \textit{overall temperature model}, phase current and the running status of the cooling fans will be our input. The temperature of the water flowing into the heat exchanger as well as the room temperature would of course be highly valuable as well, but those measurements are not available in the data which we have.
+Common causes for the first would be reduced air flow due to a damaged impeller or oxidation inside the heat exchanger, which will reduce its efficiency. Especially oxidation is a slowly-developing fault which may be difficult to spot. To discover such developments, we need a fine-tuned model which precisely predicts the winding temperature in a healthy transformer in any operation condition. Deviation in actual temperature from the predicted temperature will then be indicative of a fault. For this \textit{Overall Temperature Model}, phase current and the running status of the cooling fans will be our input. The temperature of the water flowing into the heat exchanger as well as the room temperature would of course be highly valuable as well, but those measurements are not available in the data which we have.
 
-The other type of fault, affecting only one of the three transformer windings, would typically be caused by mechanical obstruction of the air flow through the winding, for instance by an air guide which has come loose. For this \textit{relative temperature model}, the temperature of the other windings will be the most important input, since they will be mostly unaffected by this. Again, deviation from the predicted temperature will be indicative of failure.
+The other type of fault, affecting only one of the three transformer windings, would typically be caused by mechanical obstruction of the air flow through the winding, for instance by an air guide which has come loose. For this \textit{Relative Temperature Model}, the temperature of the other windings will be the most important input, since they will be mostly unaffected by this. Again, deviation from the predicted temperature will be indicative of failure.
 
-In the following, we will explore three different approaches for creating these models; first a physical model approach where we use what we know about heat dissipation in electrical conductors along with \textit{Newton's law of cooling}; then a traditional autoregressive (AR) model approach, which will yield an equation which can easily be solved by the Ordinary Least Squares (OLS) method; and lastly by using a recursive neural network (RNN) model, suitable for time series data.
+In the following, we will explore three different approaches for creating these models; first a physical model approach where we use what we know about heat dissipation in electrical conductors along with \textit{Newton's law of cooling}; then a traditional autoregressive (AR) model approach, which will yield equations which can easily be solved by the Ordinary Least Squares (OLS) method; and lastly by using recursive neural networks (RNNs), suitable for time series data.
 
 \subsection{First Approach: Physical Models} \label{sec:physical-model}
+We will treat the two parts of our temperature model separately. First we will look at the Overall Temperature Model, which shall predict the transformer temperature based on operational parameters; then we will look at the Relative Temperature Model, which shall predict the temperature of one winding based on the temperature of the two others.
 
-The efficiency of air-cooled transformers usually lay in the 98-99 \% range. For the transformer studied here, that translates to some 120-240 MW. Most of the losses are due to electrical resistance in the windings and are dissipated as heat, which must be transported out through the cooling system. The resistance is temperature dependent, and within normal operating temperatures the heat dissipation at temperature $T$ is given by
+\subsubsection{Physical Model: Overall Temperature} \label{sec:physical-model-overall}
+The efficiency of air-cooled transformers usually lay in the 98-99 \% range. For the 12 MVA transformer studied here, that translates to some 120-240 MW. Most of the losses are due to electrical resistance in the windings and are dissipated as heat, which must be transported out through the cooling system. The resistance is temperature dependent, and within normal operating temperatures the heat dissipation at temperature $T$ is given by
 \begin{equation}
-	\dot{Q}_T = I^2 [R + \alpha(T - T_0)],
+\dot{Q}_T = I^2 [R + \alpha(T - T_0)],
 \end{equation}
-where $I$ is the phase current, $R$ is the resistance at reference temperature $T_0$ (usually 20 $^\circ$C) and $\alpha$ is the temperature coefficient for the material, which is $\sim 4 \cdot 10^{-3}$ $^\circ \text{C}^{-1}$ for copper and aluminium. 
-
-\subsubsection{Physical Overall Temperature Model} \label{sec:physical-model-overall}
+where $I$ is the current, $R$ is the resistance at reference temperature $T_0$ (usually 20 $^\circ$C) and $\alpha$ is the temperature coefficient for the material, which is $\sim 4 \cdot 10^{-3}$ $^\circ \text{C}^{-1}$ for copper and aluminium. 
 
 Heat is removed from the transformer through the heat exchanger according to Newton's law of cooling;
 \begin{equation}
-	\dot{Q}_W = K_W(T - T_W),
+	\dot{Q}_W = uK_W (T - T_W),
 \end{equation}
-where $T_W$ is the water temperature, and $K_W$ is some constant representing the efficiency of heat transfer from the winding, through the air and out of the heat exchanger. Heat is also removed through the walls of the transformer into the room;
+where $T_W$ is the water temperature, and $K_W$ is some constant representing the efficiency of heat transfer from the winding, through the air and out of the heat exchanger. The factor $u$ represents the binary \textit{ON/OFF} running status of the cooling fans -- that is; $u \in \{0,1\}$. Heat is also removed through the walls of the transformer into the room. This relation can be stated as
 \begin{equation}
-	\dot{Q}_A = K_A(T - T_A),
+	\dot{Q}_A = K_A (T - T_A),
 \end{equation}
-where $K_A$ is similar to $K_W$, and $T_A$ is the ambient temperature. Heat transfer from the windings to the heat exchanger and the room happens at a delay, since heat is also stored in the system. If we let the total heat capacity of the transformer be $C$, the stored heat at temperature $T$ is given by $Q_S = CT$, such that the heat flow from the windings and out of the transformer is given by the power balance
+where $K_A$ is similar to $K_W$, and $T_A$ is the ambient temperature. Heat transfer from the windings to the heat exchanger and the room happens at a delay, since heat is also stored in the system. If we denote the total heat capacity of the transformer by $C$, the stored heat at temperature $T$ is given by $Q_S = CT$, such that the heat flow from the windings and out of the transformer is given by the power balance
 \begin{equation} \label{eq:heat-flow-compact}
 	\dot{Q}_T = C \dot{T} + \dot{Q}_W + \dot{Q}_A.
 \end{equation}
 Since we are dealing with time series here, it is natural to approximate $\dot{T}$ by its Taylor expansion $\dot{T}_{(t)} = (T_{(t)} - T_{(t-\Delta t)})/ \Delta t$. At time $t$, Equation (\ref{eq:heat-flow-compact}) solved for temperature $T_{(t)}$ then becomes
 \begin{equation} \label{eq:heat-flow-expanded-t}
-	T_{(t)} = \frac{\frac{C}{\Delta t} T_{(t-\Delta t)} + K_W T_W + K_A T_A + I^2 (R - \alpha T_0)}{\frac{C}{\Delta t} + K_W + K_A - I^2 \alpha}.
+	T_{(t)} = \frac{\frac{C}{\Delta t} T_{(t-\Delta t)} + uK_W T_W + K_A T_A + I^2 (R - \alpha T_0)}{\frac{C}{\Delta t} + uK_W + K_A - I^2 \alpha}.
 \end{equation}
 
-At this point it is tempting to let the resistance temperature coefficient $\alpha = 0$, but normal operating temperature range for a transformer is 30-130 $^\circ$C, meaning that the resistive loss in the windings will vary by $\sim 100 \cdot 4 \cdot 10^{-3} = 40 $ \%, and any accurate model would have to account for this. Further, since we do not know $T_W$ and $T_A$, neither at $t = 0$ nor later, we could maybe assume that they could be held constant. This assumption, however, is likely to not be correct, since the heat from the transformer probably will increase the room temperature and the incoming water temperature, which runs in a closed circuit. In addition, in order to solve this model with traditional methods like the Ordinary Least Squares method, we would have to linearize it, which is not entirely straight-forward. We will therefore abandon this model, but the insights gained here will be useful when we design the features for our autoregressive and our neural network models.
+At this point it is tempting to let the resistance temperature coefficient $\alpha = 0$, but normal operating temperature range for a transformer is 30-130 $^\circ$C, meaning that the resistive loss in the windings will vary by $\sim 100 \cdot 4 \cdot 10^{-3} = 40 $ \%, and any accurate model would have to account for this. Further, since we do not know $T_W$ and $T_A$, neither at $t = 0$ nor later, we could maybe assume that they could be held constant. This assumption, however, is likely to not be correct, since the heat from the transformer probably will increase the room temperature as well as the incoming water temperature, which runs in a closed circuit. In addition, in order to solve this model with traditional methods like the Ordinary Least Squares method to find $C, K_W, K_A$, we would have to linearize it -- which is not entirely straight-forward. We will therefore abandon this model, but the insights gained here will be useful when we design the features for our autoregressive and our neural network models.
 
-\subsubsection{Physical Relative Temperature Model} \label{sec:physical-model-relative}
-In a healthy transformer, the temperature in any of the three windings will be closely linked to the temperature of the two others. Since the the electric impedance must be equal between the windings in order to maintain a balanced system voltage, it is natural to assume that the electric losses will also largely be equally distributed. Any difference in temperature
+\subsubsection{Physical Model: Relative Temperature} \label{sec:physical-model-relative}
+In a healthy transformer, the temperature in any of the three windings will be closely linked to the temperature of the two others. Since the the electric impedance must be equal between the windings in order to maintain a balanced system voltage, we can assume that the electric losses will also largely be equally distributed in a well-designed transformer. Any difference in temperature is therefore likely to stem from small differences in the air flow through each winding. These assumptions correspond well with what we see in the winding temperature plots in Figure \ref{fig:all-winding-temperature-over-time}.
 
-It is natural to assume a linear relationship between the temperatures
-
+We will assume a linear relationship between the temperatures;
+\begin{equation}
+	T_X = K_{XY} T_Y + K_{XZ} T_Z,
+\end{equation}
+where $X,Y,Z$ may represent any one of the phase windings $U,V,W$. 
 
 \subsection{Second Approach: An Autoregressive Model} \label{sec:autoregressive-model}
 
@@ -176,6 +194,8 @@ It is natural to assume a linear relationship between the temperatures
 validation of model by lab tests
 
 may still fail even if perfectly maintained and monitored - ref bathtub curve
+
+why not run transformer until it gets warm and use that for benchmarking -- may not be practicable or even possible in a real industrial application
 
 \clearpage
 \vspace{5mm}
