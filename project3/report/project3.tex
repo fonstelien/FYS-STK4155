@@ -64,6 +64,9 @@ Machine learning methods play a central part in the development of digital twins
 For developing this model we have available a dataset containing operational data of a power transformer -- an introduction of which is given further down in Section \ref{sec:case-description}. STRUCTURE OF REPORT [....], but first a short review of some power transformer essentials.
 
 
+\section{Background: Power Transformers and the Case in Study}
+In this section we will review the basics that we need to know about power transformers for this report and introduce the technical terminology. We will also give a short description of the case in study and show how the transformer is operated.
+
 \subsection{Electric Power Transformer Basics} \label{sec:transformers}
 Electrical power distribution networks usually have several voltage levels, and it is the power transformer's job to \textit{transform} the power from one voltage level to another. In a three-phase power system, each phase will be connected to separate transformer \textit{windings} -- one per phase for the high voltage (HV) side and one per phase for the low voltage (LV) side. The HV and LV windings of each phase are constructed like concentric cylinders with the ferromagnetic core in the middle for magnetic coupling between them. The phase windings again are physically separated from each other, but they are usually installed together either inside a tank containing cooling oil; or an air-filled enclosure, like the one we will treat in this report. 
 
@@ -80,13 +83,15 @@ The operation of the transformer is monitored by reading phase currents and wind
 	\label{fig:dry-transformer}
 \end{figure}
 
-\subsection{Case Description} \label{sec:case-description}
-For the design, training and testing of our transformer temperature model, we have a dataset provided by ABB AS \cite{abb-url}. The dataset contains operational data from a 12 MVA (mega volt-amperes) transformer as a time series stretching over approximately 14 months. Sampling rates are between 1 second and 1 minute, depending on the signal. The transformer serves an industrial process with a highly fluctuating demand; typically 2 hours of service at 40-80 \% load, with 30 minutes breaks in-between at 0 \%, as well as a 6 hours break at night-time. The cooling fans are usually turned off between the service intervals, but with a delay. See Figure \ref{fig:temp-current-aux}.
+\subsection{Case in Study} \label{sec:case-description}
+For the design, training and testing of our transformer temperature model, we have a dataset provided by ABB AS \cite{abb-url}. The dataset contains operational data from a 12 MVA (mega volt-amperes) transformer as a time series stretching over the 15 months from 2018-06-04 through 2019-08-31. Sampling rates are between 1 second and 10 minutes, depending on the signal. The signals come from different sources with different quality, and the dataset therefore contains several holes where one or more signals of interest are missing.
+
+The transformer serves an industrial process with a highly fluctuating demand, as we see in Figure \ref{fig:temp-current-aux}. It typically follows a schedule with 2 hours of service at 40-80 \% load, with 30 minute breaks in-between at no-load, as well as a 6 hours break at night-time. The cooling fans are usually turned off between the service intervals, but with a delay.
 
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=1\linewidth]{./figs/temp-current-aux.png}
-	\caption{Typical operational profile of the transformer with winding temperature (top), current (middle) and running status of the cooling fans (bottom, 1 = ON, 0 = OFF). The temperature-dependency on current is seemingly self-evident, but the cooling fan also plays a role as we see from the increase in temperature as both current and cooling fans are turned off.}
+	\caption{Typical operational profile of the transformer over 48 hours. We see the winding temperature (top), the current (middle) and the running status of the cooling fans (bottom; 1 = ON, 0 = OFF). The strong temperature-dependency on current is seemingly self-evident, but the cooling fan also plays a role as we see from the increase in temperature as both current and cooling fans are turned off.}
 	\label{fig:temp-current-aux}
 \end{figure}
 
@@ -98,6 +103,19 @@ The temperature in the three phase windings should not deviate much from each ot
 	\caption{Development of the temperatures in windings $U,V,W$ of a healthy transformer. The temperatures follow each other closely only deviate a few degrees because of small difference in air flow through each winding.}
 	\label{fig:all-winding-temperature-over-time}
 \end{figure}
+
+
+We saw in Figure \ref{fig:temp-current-aux} in Section \ref{sec:case-description} that the transformer operation follows a typical pattern of 2 hours service and 30 minute breaks, with a longer 6 hour break during over night. In Figure \ref{fig:winding-temp-all-dataset} we see the temperature over the whole 15 month span of the dataset. We see that the transformer has some 
+
+Goes out of service for a longer period
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/winding-temp-all-dataset.png}
+	\caption{}
+	\label{fig:winding-temp-all-dataset}
+\end{figure}
+
 
 
 \section{Methods} \label{sec:methods}
@@ -258,47 +276,102 @@ For the relative temperature model we already derived the exogenous variables in
 Again, we expect the $p$ time-difference terms to make up for any variables not contained within the temperatures of the other windings, $T_X, T_Y$.
 
 \subsection{Third Approach: Recurrent Neural Network Models} \label{sec:neural-model}
+Before we look at how our temperature models can be implemented using RNNs, let's first give RNNs a proper introduction in the context that we will use them.
+
+\subsubsection{A Brief Review of Recurrent Neural Networks} \label{sec:rnn-review}
 Recurrent Neural Networks (RNNs) are a special class of neural networks designed for taking advantage of the time-proximity of sequential data when they make predictions. Like the simpler nodes in Feed Forward Neural Networks (FFNNs), RNN nodes sums all their inputs and adds a bias before applying an activation function like \textit{tanh}, \textit{sigmoid}, or similar. What distinguishes RNN nodes, however, is that they have a feedback loop such that the output resulting from the former input is \textit{remembered} by the node;
 \begin{equation} \label{eq:rnn-node}
 	\tilde{y}_{(t)} = f(w_x x_{(t)} + w_y \tilde{y}_{(t-1)} + b),
 \end{equation} 
 where $\tilde{y}_{(t)}$ and $x_{(t)}$ are the RNN node output and input at time $t$, $\tilde{y}_{(t-1)}$ is the node's preceding output. The learning parameters are the bias $b$ and the input and recurrent weights $w_x, w_y$. We see that the basic ingredients are the same as those for an AR(1) model studied in Section \ref{sec:autoregressive-model} (Equation (\ref{eq:arx-basis})) -- except of course for the non-linearity introduced by the activation function $f$. This non-linear relation between the time steps gives the RNN model characteristics which are very different from the linear AR model.
 
-As for FFNNs, the bias $b$ and the input weights $w_x$ are incrementally optimized by back-propagation from output to input by using some cost function $\mathcal{C}(y, \tilde{y})$ which is evaluated on the predicted sequence $\tilde{y} = \{\tilde{y}_{(0)}, \tilde{y}_{(1)}, ...\}$ against a target sequence $y = \{y_{(0)}, y_{(1)}, ...\}$. The recurrent weight $w_y$, however, must be learned by back-propagation through time, once for each time step in the sequence.
+As for FFNNs, the bias $b$ and the input weights $w_x$ are incrementally optimized by back-propagation from output to input by using some cost function $\mathcal{C}(y, \tilde{y})$ which is evaluated on the predicted sequence $\tilde{y} = \{\tilde{y}_{(0)}, \tilde{y}_{(1)}, ...\}$ against a target sequence $y = \{y_{(0)}, y_{(1)}, ...\}$. The recurrent weight $w_y$, however, must be learned by \textit{back-propagation through time} (BPTT), once for each time step in the sequence, which makes the learning process both computationally demanding as well as at least partially sequential.
 
-Like for FFNNs, more complex patterns can be learned by letting parallel nodes form a layer. In such a structure, the output of each layer forms a vector which is fed back into each node of the layer. This way, even more complex structures can be remembered from earlier inputs. We can also let the input be a vector, containing one or more features. Equation (\ref{eq:rnn-node}) re-written for the whole layer then becomes
+Like for FFNNs, more complex patterns can be learned by letting parallel nodes form a layer. In such a structure, the output of each layer forms a vector which is fed back into each node of the layer. This way, even more complex structures can be remembered from earlier inputs. We can also let the input be a vector, containing one or more features. Equation (\ref{eq:rnn-node}) re-written for a layer with $m$ nodes and $n$ inputs then becomes
 \begin{equation} \label{eq:rnn-layer}
-	\mathbf{y}_{(t)} = f(\mathbf{w}_x \mathbf{x}_{(t)} + \mathbf{w}_y \mathbf{y}_{(t-1)} + \mathbf{b}),
+	\mathbf{y}_{(t)} = f(\mathbf{W}_x \mathbf{x}_{(t)} + \mathbf{W}_y \mathbf{y}_{(t-1)} + \mathbf{b}),
 \end{equation} 
-where we have dropped the tilde to indicate predicted values.
+where we have dropped the tilde to indicate predicted values. The input, output and bias vector dimensions are $\mathbf{x} \in \mathbb{R}^{n \times 1}$, $\mathbf{y}, \mathbf{b} \in \mathbb{R}^{m \times 1}$, while the weight matrices have dimensions $\mathbf{W}_x \in \mathbb{R}^{m \times n}$ and $\mathbf{W}_y \in \mathbb{R}^{m \times m}$.
 
-and stacking layers on top of each other to form a deep neural network. 
+When training an RNN on a time series or a set of time series, it is most efficient to feed in \textit{mini batches} of consecutive values from the sequences at each time step. That way, the time-proximity and the amount of data that the network sees are maximized for each execution of the BPTT process, which as already mentioned is a bottleneck. With a mini batch size of $k$, the inputs and outputs thus become matrices with dimensions $\mathbf{X} \in \mathbb{R}^{n \times k}$, $\mathbf{Y} \in \mathbb{R}^{m \times k}$. We can then write Equation (\ref{eq:rnn-layer}) as
+\begin{equation} \label{eq:rnn-layer-seq}
+	\mathbf{Y}_{(t)} = f(\mathbf{W}_x \mathbf{X}_{(t)} + \mathbf{W}_y \mathbf{Y}_{(t-1)} + \mathbf{B}),
+\end{equation} 
+The dimensions of the weight matrices are as before, but the bias is now represented as a matrix $\mathbf{B} \in \mathbb{R}^{m \times k}$ with the vector $\mathbf{b}$ copied into its $k$ columns.
 
-back-propagation through time, computationally expensive.
+The next step for increasing model complexity is then to stack layers on top of each other to form a deep neural network. The network is often topped-off with a dense layer of FFNN nodes to give the model the desired output dimension (scalar, 1D, 2D, etc.). This also lets us apply some other activation function to the output than is used in the hidden RNN layers, in order to limit or expand the range if that is needed. 
+
+The propagation of errors into the network is done as earlier -- vertically from the dense output layer towards the input layer to optimize $\mathbf{W}_x$ and $\mathbf{b}$, and horizontally by BPTT between the RNN layers. 
+
+Further refinements to the simple RNN node with only an activation function and a feedback loop exit. They improve the node's memory both quantitatively in that memory remains stronger, and qualitatively in that the importance of new information and the memories is weighted. The most common of these is the \textit{Long Short-Term Memory} (LSTM) node, which we will use in our implementation. On the surface, they can be treated just like the simpler node described in Equation (\ref{eq:rnn-layer-seq}) -- the refinements are mostly hidden underneath the hood. We will rely on the \lstinline|tensorflow| and \lstinline|keras| Python modules for our application and not go into the details of the LSTM node here. Instead, we refer to \cite{geron2019hands} for more on advanced RNNs and their implementation.
+
+Lastly, some words on the arrangement of input data for \lstinline|keras|. Since we will be using mini batches for the training of the RNN, we must arrange the time series in a particular data structure. The \lstinline|keras| API requires that input data is structured as a 3D \textit{tensors}. For the design matrix \lstinline|X| dimensionality is \lstinline|[n-k, k, p]|, where \lstinline|n| is the length of our time series, \lstinline|p| is the number of input features, and \lstinline|k| is the mini batch length. If we let $\mathbf{X} \in \mathbb{R}^{(n-k) \times k \times p}$ be the mathematical representation of \lstinline|X|, we must arrange the $q$th entry in the tensor \lstinline|X[q,:,:]| as
+\begin{equation} \label{eq:X-tensor}
+\mathbf{X}_q = 
+\left[ 
+	\begin{array}{cccc}
+		x_{1(q)}	&x_{2(q)}	&\cdots		&x_{p(q)}	\\
+		x_{1(q+1)}	&x_{2(q+1)}	&\cdots		&x_{p(q+1)}	\\
+		\vdots		&\vdots		&			&\vdots		\\
+		x_{1(q+k)}	&x_{2(q+k)}	&\cdots		&x_{p(q+k)}	\\
+	\end{array}
+\right].
+\end{equation}
+Likewise, if we assume that we have a target time series which is single-valued in each time step, the input target tensor \lstinline|Y| must have dimensionality \lstinline|[n-k, k, 1]|. Again, \lstinline|n| is the length of our time series and \lstinline|k| is the mini batch length. If we now let $\mathbf{Y} \in \mathbb{R}^{(n-k) \times k \times 1}$ represent \lstinline|Y|, the $q$th entry in tensor \lstinline|Y[q,:,0]| must be on the form
+\begin{equation} \label{eq:Y-tensor}
+Y_q = 
+\left[ 
+	\begin{array}{cccc}
+		y_{(q)}	&x_{(q+1)}	&\cdots		&x_{(q+k)}	\\
+	\end{array}
+\right].
+\end{equation}
+
+Documentation on the Keras API, which is open source under the MIT license, can be found at \cite{keras-url} and. A good reference for applications with code examples is \cite{geron2019hands}.
 
 \subsubsection{RNN Model: Overall Temperature} \label{sec:rnn-model-overall}
+A lot of what we learned when we designed the features for the AR model can be reused here. We have the same two signals to work with -- phase current $I$ and cooling fan running status $u$. Even if the RNN should be able to pick up on the current-squared relationship to power loss, it does not hurt to let it know this explicitly, so we will use $I^2$ instead of $I$. This also increases variance, which is beneficial. The inverted running status $1 - u$ from the AR model is not needed, though. The bias term in the RNN nodes should be able to compensate for the all-zero input occurring when the cooling fans are shut down some minutes after the transformer goes idle.
+
+The RNN input layer will thus be fed the two time series $u, I^2$, such that the input vector $\mathbf{x}_{(t)}$ in Equation (\ref{eq:rnn-layer}) becomes
+\begin{equation}
+	\mathbf{x}_{(t)} = [u_{(t)} \quad I^2_{(t)}].
+\end{equation}
+The output of the last layer, $\tilde{y}_{(t)}$ will then be fitted against the target scalar $y_{(t)}$ using Mean Squared Error (MSE) as cost function $\mathcal{C}$. In the implementation, both $\mathbf{x}_{(t)}$ and $y_{(t)}$ must be fed into the network on the form given in Equations (\ref{eq:X-tensor}) and (\ref{eq:Y-tensor}).
+
+The network architecture as well as hyperparameters specific to the \lstinline|keras| module generally cannot be assumed, but will be decided during training. We know, however, that since we will be feeding in mini batches during training, we will need a dense layer as the output to get the right dimensionality at the output, which will be a 1D vector for each mini batch input. 
+
+We will also have to scale the training dataset, since temperature, current squared and the binary cooling fan status are measured on wildly different scales. This also helps in the learning process, since \textit{tanh}, which is the standard activation function in \lstinline|keras| "learns best" in the $[-1,1]$ range. For this we will use the \lstinline|MinMaxScaler()| from the \lstinline|sklearn| Python module \cite{skl}, which scales each feature linearly into the $[0,1]$ range.
 
 \subsubsection{RNN Model: Relative Temperature} \label{sec:rnn-model-relative}
+As with the overall temperature model, implementation of the relative model will be quite straight-forward since we already know the features from our earlier discussions. We will use the temperatures of the two other windings as inputs to predict the temperature of the third, but in the RNN model we do not have to assume a linear relationship -- the non-linear characteristic of the neural network will account for any non-linearity in the relatinship between them. 
+
+Using Equation (\ref{eq:physical-relative}) in Section \ref{sec:physical-model-relative} as a starting point, we get the input vector 
+\begin{equation}
+	\mathbf{x}_{(t)} = [T_{X(t)} \quad T_{Y(t)}].
+\end{equation}
+The same considerations with regards to architecture and hyperparameters apply here as they did for the overall temperature model in the previous section. We will also need to implement a dense layer as input, as well as scale the training dataset into the $[0,1]$ range.
 
 \subsection{Data Preparation} \label{sec:data-prep}
+As mentioned in Section \ref{sec:case-description}, the dataset that we have available for this report contains about 15 months of operational data for a power transformer. The time series which have been identified as relevant for developing our model are winding temperature for each individual winding on the low voltage side; the running status of the cooling fans; and all three phase currents. We do not have the ambient temperature, nor the cooling water temperature, both of which would be of interest to us.
 
+It is safe to assume that the phase currents will be equal between the windings such that we only need to take one time series for this, which can be applied to all windings. Further, the transformer has two cooling fans, but the running status signal is common between the two.
 
+The sampling rates differ among the time series. The currents and the cooling fan status are sampled with approximately 60 second intervals, while the temperatures are measured with 10 minute intervals. We will therefore downsample the 1 minute series to 10 minute series, which will be sufficient given the winding temperature time constant $\tau_W = 32$ minutes, measured by the factory during production (not referenced).
 
-\subsection{Subsection} \label{sec:subsection-name}
+The time series also come from different sources; the currents from one, while the temperatures and cooling fan status from another. None of them are entirely reliable. The measurements may come in early or late, and the dataset contains holes of up to several weeks where one or more signals are missing, as we see in Figure \ref{fig:missing-samples}.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/missing-samples.png}
+	\caption{Missing samples in the transformer dataset. Blue lines indicate more than one single missing sample from at least one of the time series of interest ($>25$ minutes between consecutive samples). The time series stretches over the 15 months from 2018-06-04 through 2019-08-31.}
+	\label{fig:missing-samples}
+\end{figure}
+
 % The first part deals with structuring and reading the data, much along the same lines as done in projects 1 and 2. Explain how the data are produced and place them in a proper context. 
-
-
-
 
 % You need to include at least two central algorithms, or as an alternative explore methods from decisions tree to bagging, random forests and boosting. Explain the basics of the methods you have chosen to work with. This would be your theory part. 
 
 % Then describe your algorithm and its implementation and tests you have performed. 
-
-
-
-
-
-
 
 \section{Results} \label{sec:results}
 % - Present your results
@@ -308,7 +381,7 @@ back-propagation through time, computationally expensive.
 % - Make sure that figures and tables should contain enough information in their captions, axis labels etc so that an eventual reader can gain a first impression of your work by studying figures and tables only.
 
 % Then presents your results and findings, link with existing literature and more. 
-
+\subsection{Subsection} \label{sec:subsection-name}
 
 AR model: show stationarity and ergodicity
 
@@ -320,6 +393,8 @@ AR model: show stationarity and ergodicity
 % Finally, here you should present a critical assessment of the methods you have studied and link your results with the existing literature. 
 
 validation of model by lab tests
+
+the running status of the cooling fans, which is a common signal which in reality shows the ON/OFF command from the control system -- not the actual 
 
 may still fail even if perfectly maintained and monitored - ref bathtub curve
 
