@@ -262,7 +262,9 @@ Recurrent Neural Networks (RNNs) are a special class of neural networks designed
 \begin{equation} \label{eq:rnn-node}
 	\tilde{y}_{(t)} = f(w_x x_{(t)} + w_y \tilde{y}_{(t-1)} + b),
 \end{equation} 
-where $\tilde{y}_{(t)}$ and $x_{(t)}$ are the RNN node output and input at time $t$, $\tilde{y}_{(t-1)}$ is the node's preceding output. As for FFNNs, the learning parameters $b$ (bias) and the $w_x, w_y$ (weights) are incrementally optimized by back-propagation, but through time using some cost function $\mathcal{C}(y, \tilde{y})$ which is evaluated on the predicted sequence $\tilde{y} = \{\tilde{y}_{(0)}, \tilde{y}_{(1)}, ...\}$ against a target sequence $y = \{y_{(0)}, y_{(1)}, ...\}$.
+where $\tilde{y}_{(t)}$ and $x_{(t)}$ are the RNN node output and input at time $t$, $\tilde{y}_{(t-1)}$ is the node's preceding output. The learning parameters are the bias $b$ and the input and recurrent weights $w_x, w_y$. We see that the basic ingredients are the same as those for an AR(1) model studied in Section \ref{sec:autoregressive-model} (Equation (\ref{eq:arx-basis})) -- except of course for the non-linearity introduced by the activation function $f$. This non-linear relation between the time steps gives the RNN model characteristics which are very different from the linear AR model.
+
+As for FFNNs, the bias $b$ and the input weights $w_x$ are incrementally optimized by back-propagation from output to input by using some cost function $\mathcal{C}(y, \tilde{y})$ which is evaluated on the predicted sequence $\tilde{y} = \{\tilde{y}_{(0)}, \tilde{y}_{(1)}, ...\}$ against a target sequence $y = \{y_{(0)}, y_{(1)}, ...\}$. The recurrent weight $w_y$, however, must be learned by back-propagation through time, once for each time step in the sequence.
 
 Like for FFNNs, more complex patterns can be learned by letting parallel nodes form a layer. In such a structure, the output of each layer forms a vector which is fed back into each node of the layer. This way, even more complex structures can be remembered from earlier inputs. We can also let the input be a vector, containing one or more features. Equation (\ref{eq:rnn-node}) re-written for the whole layer then becomes
 \begin{equation} \label{eq:rnn-layer}
@@ -272,7 +274,7 @@ where we have dropped the tilde to indicate predicted values.
 
 and stacking layers on top of each other to form a deep neural network. 
 
-back-propagation through time
+back-propagation through time, computationally expensive.
 
 \subsubsection{RNN Model: Overall Temperature} \label{sec:rnn-model-overall}
 
