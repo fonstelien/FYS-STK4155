@@ -105,16 +105,6 @@ The temperature in the three phase windings should not deviate much from each ot
 \end{figure}
 
 
-We saw in Figure \ref{fig:temp-current-aux} in Section \ref{sec:case-description} that the transformer operation follows a typical pattern of 2 hours service and 30 minute breaks, with a longer 6 hour break during over night. In Figure \ref{fig:winding-temp-all-dataset} we see the temperature over the whole 15 month span of the dataset. We see that the transformer has some 
-
-Goes out of service for a longer period
-
-\begin{figure}[!h]
-	\centering
-	\includegraphics[width=1\linewidth]{./figs/winding-temp-all-dataset.png}
-	\caption{}
-	\label{fig:winding-temp-all-dataset}
-\end{figure}
 
 
 
@@ -184,11 +174,11 @@ where the $\mathbf{w} = \{w_{i}\}$ are the weights, $\mathbf{y}_p = \{y_{(k-i)}\
 Here, $\mathbf{x} = \{x_{i(k)}\}$, where $x_{i(k)}$ represents the $k$th value of the $i$th exogenous variable, and $\mathbf{w}_x = \{w_i\}_x$ are their weights. The "X" in ARX is often dropped, so the systems described in Equations (\ref{eq:ar-basis}) and (\ref{eq:arx-basis}) are both referred to as AR models. 
 
 For the AR model to work, the time series must meet two requirements; it must be \textit{stationary} and \textit{ergodic}. Stationarity is met if the time series does not have an underlying trend, meaning that the expectation value of any two series of samples $y_1 = \{y_{(a)}, y_{(a+1)}, ..., y_{(b)}\}$, $y_2 = \{y_{(c)}, y_{(c+1)}, ..., y_{(d)}\}$ must be constant;
-\begin{equation}
+\begin{equation} \label{eq:stationarity}
 	\mathbb{E}(y_1) = \mathbb{E}(y_2) \Rightarrow \frac{1}{b-a} \sum_{i=a}^{b} y_{(i)} = \frac{1}{c-d} \sum_{i=c}^{d} y_{(i)}.
 \end{equation}
 The other criteria, that of ergodicity, is met if the \textit{autocovariance} falls to zero;
-\begin{equation}
+\begin{equation} \label{eq:ergodicity}
 	\lim\limits_{j \rightarrow \infty} \mathrm{cov}(y_{(t)}, y_{(t-j)}) = 0.
 \end{equation}
 Relating this to Equations (\ref{eq:ar-basis}) and (\ref{eq:arx-basis}), this means that $w_q \approx 0$ for $q > p$. Refer to \cite{shumway2017} for a thorough treatment of statistical time series analysis.
@@ -336,9 +326,9 @@ The RNN input layer will thus be fed the two time series $u, I^2$, such that the
 \begin{equation}
 	\mathbf{x}_{(t)} = [u_{(t)} \quad I^2_{(t)}].
 \end{equation}
-The output of the last layer, $\tilde{y}_{(t)}$ will then be fitted against the target scalar $y_{(t)}$ using Mean Squared Error (MSE) as cost function $\mathcal{C}$. In the implementation, both $\mathbf{x}_{(t)}$ and $y_{(t)}$ must be fed into the network on the form given in Equations (\ref{eq:X-tensor}) and (\ref{eq:Y-tensor}).
+The output of the last layer, $\tilde{y}_{(t)}$ will then be fitted against the target scalar $y_{(t)}$ using a cost function $\mathcal{C}$. In the implementation, both $\mathbf{x}_{(t)}$ and $y_{(t)}$ must be fed into the network on the form given in Equations (\ref{eq:X-tensor}) and (\ref{eq:Y-tensor}).
 
-The network architecture as well as hyperparameters specific to the \lstinline|keras| module generally cannot be assumed, but will be decided during training. We know, however, that since we will be feeding in mini batches during training, we will need a dense layer as the output to get the right dimensionality at the output, which will be a 1D vector for each mini batch input. 
+The network architecture as well as hyperparameters specific to the \lstinline|keras| module generally cannot be assumed, but will be decided during training. We know, however, that since we will be feeding in mini batches during training, we will need a dense layer as the output to get the right dimensionality at the output, which will be a 1D vector for each mini batch input. The RNN layers must also be instantiated with the \lstinline|return_sequences=True| option in order to let the full mini batch sequence run through all layers. Since the mini batches are likely to be short, we can also use \lstinline|unroll=True|, which will speed up learning.
 
 We will also have to scale the training dataset, since temperature, current squared and the binary cooling fan status are measured on wildly different scales. This also helps in the learning process, since \textit{tanh}, which is the standard activation function in \lstinline|keras| "learns best" in the $[-1,1]$ range. For this we will use the \lstinline|MinMaxScaler()| from the \lstinline|sklearn| Python module \cite{skl}, which scales each feature linearly into the $[0,1]$ range.
 
@@ -367,6 +357,21 @@ The time series also come from different sources; the currents from one, while t
 	\label{fig:missing-samples}
 \end{figure}
 
+
+We saw in Figure \ref{fig:temp-current-aux} in Section \ref{sec:case-description} that the transformer operation follows a typical pattern of 2 hours service and 30 minute breaks, with a longer 6 hour break over night. In Figure \ref{fig:winding-temp-all-dataset} we see the temperature over the whole 15 month span of the dataset. Ideally, when new equipment is set into service, we should fit our model as early as possible (so-called \textit{baselining}) in order to identify changes over time relative to the new equipment. Bus, as we see, the transformer has an unstable period for the first half a year approximately, where the lowest temperature fluctuates between 36-38 $^\circ$C. The reason is probably that the cooling water temperature changes. 
+
+For the overall temperature model, the unstable, first period cannot be used for model fitting since the cooling water temperature is an exogenous variable which we do not have in our model -- these are exactly the changes our model should able to identify, in that the predicted temperature will deviate from the actual. We will therefore use data from mid-November 2018 onward to fit our model.
+
+The relative temperature model, on the other hand, is more stable since it implicitly has the information about changing external factors through the temperatures of the other windings. For fitting of this model, we will therefore be able to use data from early June 2018 already.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/winding-temp-all-dataset.png}
+	\caption{Transformer winding temperature over the whole period of the dataset from 2018-06-04 through 2019-08-31. The transformer has an unstable period for the first six months, seen from the changing lowest temperature. We see a period of about a week with missing samples in mid-November, but note that other time series needed for the model may miss values as well.}
+	\label{fig:winding-temp-all-dataset}
+\end{figure}
+
+
 % The first part deals with structuring and reading the data, much along the same lines as done in projects 1 and 2. Explain how the data are produced and place them in a proper context. 
 
 % You need to include at least two central algorithms, or as an alternative explore methods from decisions tree to bagging, random forests and boosting. Explain the basics of the methods you have chosen to work with. This would be your theory part. 
@@ -381,6 +386,62 @@ The time series also come from different sources; the currents from one, while t
 % - Make sure that figures and tables should contain enough information in their captions, axis labels etc so that an eventual reader can gain a first impression of your work by studying figures and tables only.
 
 % Then presents your results and findings, link with existing literature and more. 
+
+We will now study the performance of our models. The section is split in two, such that we first review the overall temperature model implemented as AR and RNN; then we will look at the both implementations for the relative temperature model.
+
+\subsection{Overall Temperature Model} \label{sec:results-overall}
+As we concluded in Section \ref{sec:physical-model-overall}, the we would abandon the purely physical model of the overall temperature, due to its complexity and reliance on the water and ambient temperatures. We will thus see results only for the AR and RNN models in this section.
+
+\subsubsection{Overall Temperature: AR Model} \label{sec:results-overall-ar}
+The accuracy of the AR($p$) model which we developed in Section \ref{sec:ar-model-overall}, Equation (\ref{eq:ar-overall-1}), is shown in Figure XX for increasing model order $p$. We see that the model quite quickly converges to an R$^2$ score in the upper 80's and an MSE of around 1.6. To the right in the figure we also see that the weights $w_i$ for the time-difference terms $T_{(t-i)}$ fall quickly towards zero. This is indicative of ergodicity in the time series (Equation (\ref{eq:ergodicity})). Along with the seeming stationarity (Equation (\ref{eq:stationarity})) observed from the temperature plot of the whole dataset in Figure \ref{fig:winding-temp-all-dataset}, the criteria for applying the AR method to this problem appear to have been met. 
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/ar-model-learning.png}
+	\caption{The autoregressive AR($p$) model converges to a high R$^2$ score at around $p = 2$ already (left), also illustrated by the quickly falling MSE (center). The stem plot indicate that the AR criteria of ergodicity has been met in these time series (right). The training period stretches over one month from 2018-11-15 through 2018-12-15, while the test period stretches over the approximately two weeks from 2019-01-14 through 2019-02-01.}
+	\label{fig:ar-model-learning}
+\end{figure}
+
+The high R$^2$ score and MSE indicate that the time-difference terms $p$ compensate well both for the temperature "momentum" introduced by the heat capacity of the transformer, as well as for the missing information about ambient temperature and water temperature. This is largely confirmed by the predicted temperature by the AR($2$) model shown in Figure \ref{fig:ar-model-performance}. This time range has been selected due to its high load variability, and we see that the model predicts the peaks with only some 2-3 K error. The error is largest in the prediction of the negative peaks, which occur as the transformer is shut off, and hence is not critical. Increasing the model order $p$ improves on this, but comes at a cost to accuracy in the positive peaks.
+
+We also see that the prediction for the over-night breaks is quite poor -- the model tries to predict the average value in order to satisfy the OLS cost function. This error can be disregarded completely since the model receives no information during this time ($I^2, u = 0$).
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/ar-model-performance.png}
+	\caption{The AR($2$) model during a time range with highly varying demand. Performance is good, especially while the transformer is in service. During the $\sim 30$ minute breaks (negative peaks) and night performance is poorer, but this is not critical.}
+	\label{fig:ar-model-performance}
+\end{figure}
+
+\subsubsection{Overall Temperature: RNN Model} \label{sec:results-overall-rnn}
+The overall temperature RNN model has been implemented as a two-layer LSTM network with a dense output layer of FFNN nodes. The input layer has 30 nodes, the hidden RNN layer 18 nodes and the output layer has nodes corresponding to the length of the mini batch. 
+
+The network has been implemented in \lstinline|keras| and stacked using \lstinline|Sequential()|. Initially, the network had somewhat poor responsiveness to changing $I^2$, but by trial and error, good performance was achieved by damping the feedback by using \lstinline|recurrent_dropout=.5| and input \lstinline|dropout=.0|, then \lstinline|compile()| with \lstinline|optimizer='adam| and \lstinline|loss='mse|. Further, model fitting was done using \lstinline|Sequential.fit()|, with \lstinline|epochs=50| and stochastic gradient descent \lstinline|batch_size=50|.
+
+The mini batch size was found to be an important hyperparameter. In Figure \ref{fig:rnn-model-learning} we see the increasing accuracy of the model as the batch size grows. It reaches approximately the same R$^2$ score as the AR model, but MSE is quite a lot better. Somewhat interestingly, we see that test R$^2$ is better than train R$^2$. The reason is the relatively higher variance in the test set targets than the training set, at 13.3 and 8.7, respectively. The MSE, however, is as we see better for the training set.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/rnn-model-learning.png}
+	\caption{The recurrent neural network model converges to a high R$^2$ score with mini batch size 6 already (left), also illustrated by the quickly falling MSE (right). The training period stretches over approximately seven weeks from 2018-11-15 through 2019-01-07, while the test period stretches over the approximately two weeks from 2019-01-14 through 2019-02-01.}
+	\label{fig:rnn-model-learning}
+\end{figure}
+
+The RNN model is more data hungry during training than the AR model, and was trained for about seven weeks versus the month that AR needed. But even though, performance is better for the RNN both on the positive and negative peaks, as we see in Figure \ref{fig:rnn-model-performance}. Shown here is the same time range as for the AR model in Figure \ref{fig:ar-model-performance}. The RNN predicts both directions with high accuracy, and we only have the occasional overshoot, like in the evening on 2018-01-17. As with the AR, the RNN tries to average the night breaks. The LSTM memory seemingly is not good enough to remember across the $\sim 60$ sample span when both inputs $I^2$ and $u$ are zero. This can be compensated by increasing the batch size, but comes at a cost to learning efficiency and is not needed for the utility of the model.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/rnn-model-performance.png}
+	\caption{The RNN model during the same time range as seen for the AR model in Figure \ref{fig:ar-model-performance}. The RNN predicts accurately both positive and negative peaks.}
+	\label{fig:rnn-model-performance}
+\end{figure}
+
+\subsection{Relative Temperature Model} \label{sec:results-relative}
+In Section \ref{sec:physical-model} we showed how three models for the relative temperature could be made -- by OLS using the temperature of two windings to predict the third; as an AR($p$) model, which would then be solved by OLS; and as an RNN. Since the pure OLS model correspond exactly to the AR($0$) model, we will treat this as a special case of the AR model in the following discussion.
+
+\subsubsection{Relative Temperature: AR Model} \label{sec:results-relative-ar}
+\subsubsection{Relative Temperature: RNN Model} \label{sec:results-relative-rnn}
+
 \subsection{Subsection} \label{sec:subsection-name}
 
 AR model: show stationarity and ergodicity
@@ -391,6 +452,8 @@ AR model: show stationarity and ergodicity
 % - Try to discuss the pros and cons of the methods and possible improvements
 
 % Finally, here you should present a critical assessment of the methods you have studied and link your results with the existing literature. 
+
+RNN more data hungry than AR model
 
 validation of model by lab tests
 
