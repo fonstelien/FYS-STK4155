@@ -17,65 +17,33 @@ def shifts(df, shift_max, prefix='temp__'):
     return result_df
 
 
-def prep_current_model_dataset(aux_df, current_df, temp_df, shift_max):
-    '''Preps dataset for the current-based autoregression model. Args are the exogenous signals aux_df and current_df and the target temp_df. All rows containing np.NaN are dropped from the dataset. Returns pd.DataFrames (X,y) where X contains shift_max shifts in the temperatures for autoregression and y contains the target temperatures.'''
+def prep_overall_model_dataset(aux_df, current_df, temp_df, shift_max):
+    '''Preps dataset for the overall current-based autoregression model. Args are the exogenous signals aux_df and current_df and the target temp_df. All rows containing np.NaN are dropped from the dataset. Returns pd.DataFrames (X,y) where X contains shift_max shifts in the temperatures for autoregression and y contains the target temperatures.'''
     X = aux_df.copy()
     X['intercept'] = 1
-    X = X.join(current_df, how='outer')  # Loading
+    # X['I'] = current_df
     X['I2'] = current_df**2  # Power dissipation
-
-    # X['I2_inv'] = (1 + current_df**3)*current_df 
-    # X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
     
     X = X.join(shifts(temp_df, shift_max), how='outer')
     X = X.dropna()
-    
+
     y = X[temp_df.columns]
     X = X.drop(columns=temp_df.columns)
 
     return X, y
 
 
-
-def prep_current_temp_model_dataset(aux_df, current_df, temp_df, tempX_df, tempY_df, shift_max):
-    '''Preps dataset for the current-temperature-based autoregression model. Args are the exogenous signals aux_df and current_df and the target temp_df, in addition to exogenous signals tempX_df and tempY_df, which are the temperatures of the other transformer coils. All rows containing np.NaN are dropped from the dataset. Returns pd.DataFrames (X,y) where X contains shift_max shifts in the temperatures for autoregression and y contains the target temperatures.'''
-    X = aux_df.copy()
-    X['intercept'] = 1
-    
-    X = X.join(current_df, how='outer')  # Loading
-    X['I2'] = current_df**2  # Power dissipation
-    # X['r'] = X['I2']*temp_df.iloc[:,0].shift(periods=1)  # Power in temperature-dependent resistance
-    
-    X = X.join(tempX_df, how='outer')
-    X = X.join(tempY_df, how='outer')
-    X = X.join(shifts(temp_df, shift_max), how='outer')
+def prep_relative_model_dataset(tempX_df, tempY_df, tempZ_df, tempX_shift_max):
+    '''Preps dataset for the temperature-based autoregression model. Args are the exogenous signals tempY_df, tempZ_df, which are the temperatures of the other transformer coils, and the target tempX_df. All rows containing np.NaN are dropped from the dataset. Returns pd.DataFrames (X,y) where X contains tempX_shift_max shifts in the tempX_df temperatures for autoregression and y contains the target temperatures.'''
+    X = tempY_df.copy()
+    X = X.join(tempZ_df, how='outer')
+    X = X.join(shifts(tempX_df, tempX_shift_max), how='outer')
     X = X.dropna()
     
-    y = X[temp_df.columns]
-    X = X.drop(columns=temp_df.columns)
+    y = X[tempX_df.columns]
+    X = X.drop(columns=tempX_df.columns)
 
     return X, y
-
-
-def scale(*dfs, cols=None, with_std=True, with_mean=True):
-    '''Wrapper for skl.preprocessing.StandardScaler. Does fit() on the first pd.DataFrame in dfs, and transform() on all. Scaling is limited to the columns indicated in cols.'''
-    scaler = skl.preprocessing.StandardScaler(with_std=with_std, with_mean=with_mean)
-    scaler = skl.preprocessing.MinMaxScaler()
-    
-    dfs = [df for df in dfs]
-    df = dfs[0]
-    cols = cols if cols else df.columns
-    cols_idx = [df.columns.get_loc(col) for col in cols]
-    
-    scaler.fit(df[cols])
-    for i, df in enumerate(dfs):
-        a = df.to_numpy()
-        a[:, cols_idx] = scaler.transform(df[cols])
-        a[:, cols_idx] += 1
-        dfs[i] = pd.DataFrame(data=a, index=df.index, columns=df.columns)
-        
-    return dfs
-
 
 
 def ols(X, y):
@@ -93,7 +61,7 @@ def evaluate(coeffs, X, init_temp):
 
     temps = np.ndarray((n,1))
     coeffs = coeffs.to_numpy().T  # into shape (p,1) 
-    X = X.to_numpy()
+    X = X.to_numpy().copy()
 
     if shift_max > 0:
         temps[0] = init_temp

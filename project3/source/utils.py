@@ -13,6 +13,7 @@ def parse_file(fname, col_name=None):
         df = df.rename(columns={'Value':col_name})
     return df
 
+
 def align(*dfs):
     '''Aligns dfs pd.DataFrames and drops any rows with missing values.'''
     aligned = dfs[0].copy()
@@ -22,9 +23,8 @@ def align(*dfs):
     return aligned
 
 
-
 def sample_gaps(df):
-    '''Finds all gaps > 25 minutes between two consequtive samples and returns them in a np.DataFrame.'''
+    '''Finds all gaps > 25 minutes between two consequtive samples and returns them as an np.DatetimeIndex.'''
     T = pd.DataFrame()
     T['time'] = df.index[1:]
     T['gap'] = df.index[1:] - df.index[:-1]
@@ -32,8 +32,7 @@ def sample_gaps(df):
     T = T.asfreq(freq='T', method='bfill')
     T = T.asfreq(freq='10T')
     T = T[T['gap'] > np.timedelta64(25, 'm')]
-    T['gap'] = 1
-    return T
+    return T.index
 
 # def fill_gaps(df):
 #     df = df.asfreq(freq='T', method='ffill')
