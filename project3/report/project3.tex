@@ -31,7 +31,7 @@
 }
 
 
-\title{FYS-STK4155 H20 - Project 3:\\Time Series Analysis with AR and RNN Models}
+\title{FYS-STK4155 H20 - Project 3:\\Creating a Power Transfomer Cooling System Model using Autoregression and Recurrent Neural Networks}
 \author{Olav Fønstelien}
 
 \begin{document}
@@ -44,7 +44,11 @@
 % - What have you done to solve this 
 % - Main Results 
 % - The implications
+In this report we suggest a power transformer air cooling system model which accurately predicts the winding temperature under dynamic conditions. The model is designed using real data from a transformer serving an industrial process with highly varying power demand. It consists of two parts; one which predicts the transformer winding temperature based on current and the cooling fan status; and one which predicts the winding temperature of each winding based on the temperature of the two others. In validation, the predicted temperature deviates from the actual by 2-3 K at the highest load peaks. The model is suggested for condition monitoring of cooling efficiency, as well as detection of sub-optimal cooling of individual windings. The model requires no parametrization and is completely non-intrusive during fitting.
 
+We suggest two different implementations of the model; one by autoregression and one by recurrent neural network. The report also reviews the relevant background of these methods, as well as that of air-cooled power transformers.
+
+Please visit my GitHub repository \url{https://github.com/fonstelien/FYS-STK4155/tree/master/project3} for the Python source code developed for this report.
 \end{abstract}
 
 \section{Introduction} \label{sec:intro}
@@ -59,10 +63,9 @@
 
 Electric machines are highly reliable when properly designed and maintained. They are the workhorses in any industrial process, as well as the actuator in safety-critical functions, and failure may have both economic and physical consequences in the form of production downtime and personnel injury. Ensuring proper function of the machinery is a major cost driver in industry -- dedicated technicians are employed to execute detailed maintenance schedules while others log and monitor performance indicators like temperatures and vibration levels. Improving and automating such procedures is a large part of what \textit{Industry 4.0} is about. \textit{Digital twins} of the machines can be used to predict faults which are developing too slowly to be noticed, or which may not even be detectable with regular instrumentation. 
 
-Machine learning methods play a central part in the development of digital twins. In this report we will see how a simple model for condition monitoring of the cooling system of an electric power transformer can be created by the use of traditional autoregression and more modern neural networks. Even small increases in a transformer's operating temperature may have severe effects on the lifetime of its electrical insulation, and ensuring that the cooling system performs as designed is vital for reliability and performance of the transformer. We will create model of the transformer which lets us evaluate the cooling system's performance under dynamic operating conditions based only on a few input measurements which are normally monitored in a standard plant automation and control system. The performance at the time of model creation will serve as the baseline against which future performance will be measured.
+Industrial processes introduce complex environments and modeling machine behavior by analytical methods is a highly non-trivial tasks. Machine learning methods therefore play a central part in the development of digital twins. In this report we will see how a simple model for condition monitoring of the cooling system of an electric power transformer can be created by the use of traditional autoregression and more modern neural networks. Even small increases in a transformer's operating temperature may have severe effects on the lifetime of its electrical insulation, and ensuring that the cooling system performs as designed is vital for reliability and performance of the transformer. We will create model of the transformer which lets us evaluate the cooling system's performance under dynamic operating conditions. The model is based only on a few input measurements which are normally monitored in a standard plant automation and control system, and requires no parametrization. The performance at the time of model creation will serve as the baseline against which future performance will be measured.
 
-For developing this model we have available a dataset containing operational data of a power transformer -- an introduction of which is given further down in Section \ref{sec:case-description}. STRUCTURE OF REPORT [....], but first a short review of some power transformer essentials.
-
+For developing this model we have available a dataset containing operational data of a power transformer -- an introduction of which is given further down in Section \ref{sec:case-description}. In Section \ref{sec:methods} we will investigate three different approaches to creating the cooling system model; one physical, where we exploit what we know about heat transfer and electric power losses in a conductor; then an autoregressive approach, where we carry over our insights from the physical approach to design features in an AR model. At last we investigate an approach using recurrent neural networks. The results are presented in Section \ref{sec:results}, where we go through how each of the parts of the model performs with each of the approaches, with special attention to the \textit{positive} temperature peaks. We end by summing up our findings and putting them into an industrial context in Section \ref{sec:conclusion}, where we also present some thoughts on further expansions and the model's utility in similar applications. But first; power transformer essentials.
 
 \section{Background: Power Transformers and the Case in Study}
 In this section we will review the basics that we need to know about power transformers for this report and introduce the technical terminology. We will also give a short description of the case in study and show how the transformer is operated.
@@ -432,7 +435,7 @@ The RNN model is more data hungry during training than the AR model, and was tra
 \begin{figure}[!h]
 	\centering
 	\includegraphics[width=1\linewidth]{./figs/rnn-model-performance.png}
-	\caption{The RNN model during the same time range as seen for the AR model in Figure \ref{fig:ar-model-performance}. The RNN predicts accurately both positive and negative peaks.}
+	\caption{The RNN model during the same time range as seen for the AR model in Figure \ref{fig:ar-model-performance}. The RNN predicts accurately both positive and negative peaks. Mini batch size is 9 in this model.}
 	\label{fig:rnn-model-performance}
 \end{figure}
 
@@ -440,28 +443,62 @@ The RNN model is more data hungry during training than the AR model, and was tra
 In Section \ref{sec:physical-model} we showed how three models for the relative temperature could be made -- by OLS using the temperature of two windings to predict the third; as an AR($p$) model, which would then be solved by OLS; and as an RNN. Since the pure OLS model correspond exactly to the AR($0$) model, we will treat this as a special case of the AR model in the following discussion.
 
 \subsubsection{Relative Temperature: AR Model} \label{sec:results-relative-ar}
+Our assumption about the linear relationship between the winding temperatures in Section \ref{sec:physical-model-relative}, Equation (\ref{eq:physical-relative}), seems to have been correct. In Figure \ref{fig:ar-model-learning-relative} we see that we reach a very high R$^2$ score and low MSE with AR($0$) already. Any improvement achieved by introducing the time-difference terms can only have very little impact on the quality of the result, as we see in Figure \ref{fig:ar-model-performance-relative} -- the match is almost perfect, with only minor overshoot of about 1 K on the highest positive peaks. Thus, OLS with the physical approach has the best approximation for the relative model. Note also that this result was achieved with only a single day's data for training, which really matters in a practical application.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/ar-model-learning-relative.png}
+	\caption{The autoregressive AR($p$) model converges to a very high R$^2$ score at around $p = 0$ already (left), with only minor improvement beyond that point. For higher orders, we see from the stem plot (right) that the model balances the weights on the time-difference terms against that of the other winding temperatures, but the result is largely unchanged. The training period stretches over one day only; from 2018-06-05 at midnight until 2018-06-06 at midnight, while the test period stretches over the approximately two weeks from 2019-01-14 through 2019-02-01, as in the results from the previous section.}
+	\label{fig:ar-model-learning-relative}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/ar-model-performance-relative.png}
+	\caption{The AR($0$) or physical relative temperature model during a time range with highly varying demand. The model achieves an almost perfect match, both during when the transformer is in service and when idle.}
+	\label{fig:ar-model-performance-relative}
+\end{figure}
+
 \subsubsection{Relative Temperature: RNN Model} \label{sec:results-relative-rnn}
+The RNN for the relative model can be simplified considerably compared to the overall model. Figuring out the linear relationship that we saw in the previous section between the two features in the design matrix and the target is a much simpler problem than the former, which had a time-difference dependency. We will use a network with only one RNN layer containing 5 nodes, in addition to the dense FFNN output layer. Other hyperparameters could be kept the same as in Section \ref{sec:results-overall-rnn}. 
 
-\subsection{Subsection} \label{sec:subsection-name}
+Figure \ref{fig:rnn-model-learning-relative} shows again the progressive accuracy of the model as we increase the mini batch size while keeping the number of epochs constant. To the left we see that the model reaches a R$^2$ score of about 0.75 at about size 4 and then climbs steadily upwards towards approximately 0.85 at batch size 10. This is a quite good approximation, but of course much worse than the AR($0$) model we found above in the previous section, which approached 1.0. 
 
-AR model: show stationarity and ergodicity
+The curve fit of the RNN model is quite good, with proper prediction within 2-3 K error except for the highest peaks, as we see in Figure \ref{fig:rnn-model-performance-relative}. However, considering the relative simplicity of the problem, the result is somewhat disappointing. The model was trained on one month of data.
 
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/rnn-model-learning-relative.png}
+	\caption{The recurrent neural network model reaches an R$^2$ score of approximately 0.85 with mini batch size 10 (left). The training period stretches over one month from 2018-06-04 through 2018-06-04, while the test period stretches over the same two weeks as earlier -- from 2019-01-14 through 2019-02-01.}
+	\label{fig:rnn-model-learning-relative}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figs/rnn-model-performance-relative.png}
+	\caption{The RNN model does not perform poorly, but compared to the AR(0) model seen in Figure \ref{fig:ar-model-performance-relative}, it cannot compete. The RNN predicts accurately both positive and negative peaks with a few degrees error. Mini batch size is 10 in this model.}
+	\label{fig:rnn-model-performance-relative}
+\end{figure}
+
+\clearpage
 \section{Discussion and Conclusion} \label{sec:conclusion}
 % - State your main findings and interpretations
 % - Try as far as possible to present perspectives for future work
 % - Try to discuss the pros and cons of the methods and possible improvements
 
 % Finally, here you should present a critical assessment of the methods you have studied and link your results with the existing literature. 
+We have seen that by using only current, cooling fan running status and winding temperatures -- measurements which are normally collected and logged in an industrial application -- we can create a precise model of the transformer's cooling system. The model correctly predicts the transformer winding temperature under dynamic operation -- either as an overall temperature based on current and cooling fan running status; or it predicts the relative temperature of each of the three windings, based on the temperature of the others. The model predicts the temperatures with high reliability, and only deviate 2-3 K at the highest load peaks.
 
-RNN more data hungry than AR model
+The model requires no parametrization. The model creation is also completely non-intrusive in that it requires no specific load patterns for baselining of the transformer -- something which in many cases would be impractical or even impossible in an industrial application. In the case of the relative winding temperature model, only a single day's data is required. The overall winding temperature model needs some 6-8 weeks of data. Sampling rate may be as little as every 10th minute.
 
-validation of model by lab tests
+The two parts of the model are made as a purely linear combination of the winding temperatures in the case of the relative temperature, while the overall may use either an autoregressive method or a more advanced recurrent neural network. 
 
-the running status of the cooling fans, which is a common signal which in reality shows the ON/OFF command from the control system -- not the actual 
+In a practical application, simplicity really matters, and the most valuable part of the model is therefore the relative winding temperature model, which has an R$^2$ score above 99 \%, requires very little data to fit, and is simple to implement. Compared to this, any model would perform badly, and even with an R$^2$ well above 80 \%, the RNN cannot compete with this. If it were necessary, it should be possible to implement this model as a simple FFNN with only a few nodes, since there really is no time-dependence in the linear model.
 
-may still fail even if perfectly maintained and monitored - ref bathtub curve
+The same considerations regarding simplicity goes for the overall winding temperature model as well. Even though performance was slightly better for the RNN, the AR model is simple to implement for instance in an industrial programmable logic controller, which has limited computing resources and often only very basic software libraries. On the other hand, if the implementation would be on a server on some cloud, those considerations are not as important. Still, we have seen that the RNN is more data hungry than the simpler linear methods.
 
-why not run transformer until it gets warm and use that for benchmarking -- may not be practicable or even possible in a real industrial application
+In addition to final validation by lab tests, suggestions for future work would be to expand the model to include other measurements like water temperature and air temperature into and out of the transformer's heat exchanger. These improvements would be able to spot specific problems, like oxidation in the heat exchanger, in a completely non-intrusive way. Further, the model suggested here is easily transferred to other electric machines like motors or generators, which have their particular fault modes relating to cooling systems.
+
 
 \clearpage
 \vspace{5mm}
