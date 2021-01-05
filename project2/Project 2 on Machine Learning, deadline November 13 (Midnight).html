@@ -1,0 +1,590 @@
+<!--
+Automatically generated HTML file from DocOnce source
+(https://github.com/hplgit/doconce/)
+-->
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="DocOnce: https://github.com/hplgit/doconce/">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Project 2 on Machine Learning, deadline November 13 (Midnight)">
+
+<title>Project 2 on Machine Learning, deadline November 13 (Midnight)</title>
+
+
+<style type="text/css">
+/* bloodish style */
+
+body {
+  font-family: Helvetica, Verdana, Arial, Sans-serif;
+  color: #404040;
+  background: #ffffff;
+}
+h1 { font-size: 1.8em;  color: #8A0808; }
+h2 { font-size: 1.6em;  color: #8A0808; }
+h3 { font-size: 1.4em;  color: #8A0808; }
+h4 { color: #8A0808; }
+a { color: #8A0808; text-decoration:none; }
+tt { font-family: "Courier New", Courier; }
+/* pre style removed because it will interfer with pygments */
+p { text-indent: 0px; }
+hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+p.caption { width: 80%; font-style: normal; text-align: left; }
+hr.figure { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+
+div { text-align: justify; text-justify: inter-word; }
+</style>
+
+
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Menu_Button .MathJax_Hover_Arrow {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px; font-family: 'Courier New',Courier; font-size: 9px; color: #F0F0F0}
+.MathJax_Menu_Button .MathJax_Hover_Arrow span {display: block; background-color: #AAA; border: 1px solid; border-radius: 3px; line-height: 0; padding: 4px}
+.MathJax_Hover_Arrow:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_Hover_Arrow:hover span {background-color: #CCC!important}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_About.MathJax_MousePost {outline: none}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 5px 0px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 5px; -webkit-border-radius: 5px; -moz-border-radius: 5px; -khtml-border-radius: 5px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 1px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; padding-top: .25em; color: #666666; font-size: .75em}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: .7em}
+.MathJax_MenuRadioCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuLabel {padding: 1px 2em 3px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #DDDDDD; margin: 4px 3px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: #606872; color: white}
+.MathJax_MenuDisabled:focus, .MathJax_MenuLabel:focus {background-color: #E8E8E8}
+.MathJax_ContextMenu:focus {outline: none}
+.MathJax_ContextMenu .MathJax_MenuItem:focus {outline: none}
+#MathJax_AboutClose {top: .2em; right: .2em}
+.MathJax_Menu .MathJax_MenuClose {top: -10px; left: -10px}
+.MathJax_MenuClose {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; font-family: 'Courier New',Courier; font-size: 24px; color: #F0F0F0}
+.MathJax_MenuClose span {display: block; background-color: #AAA; border: 1.5px solid; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; line-height: 0; padding: 8px 0 6px}
+.MathJax_MenuClose:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_MenuClose:hover span {background-color: #CCC!important}
+.MathJax_MenuClose:hover:focus {outline: none}
+</style><style type="text/css">.MathJax_Preview .MJXf-math {color: inherit!important}
+</style><style type="text/css">.MJX_Assistive_MathML {position: absolute!important; top: 0; left: 0; clip: rect(1px, 1px, 1px, 1px); padding: 1px 0 0 0!important; border: 0!important; height: 1px!important; width: 1px!important; overflow: hidden!important; display: block!important; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none}
+.MJX_Assistive_MathML.MJX_Assistive_MathML_Block {width: 100%!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; -webkit-box-sizing: content-box; -moz-box-sizing: content-box; box-sizing: content-box; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1px; bottom: 2px; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXp-script {font-size: .8em}
+.MJXp-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXp-bold {font-weight: bold}
+.MJXp-italic {font-style: italic}
+.MJXp-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-largeop {font-size: 150%}
+.MJXp-largeop.MJXp-int {vertical-align: -.2em}
+.MJXp-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXp-display {display: block; text-align: center; margin: 1em 0}
+.MJXp-math span {display: inline-block}
+.MJXp-box {display: block!important; text-align: center}
+.MJXp-box:after {content: " "}
+.MJXp-rule {display: block!important; margin-top: .1em}
+.MJXp-char {display: block!important}
+.MJXp-mo {margin: 0 .15em}
+.MJXp-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXp-denom {display: inline-table!important; width: 100%}
+.MJXp-denom > * {display: table-row!important}
+.MJXp-surd {vertical-align: top}
+.MJXp-surd > * {display: block!important}
+.MJXp-script-box > *  {display: table!important; height: 50%}
+.MJXp-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXp-script-box > *:last-child > * {vertical-align: bottom}
+.MJXp-script-box > * > * > * {display: block!important}
+.MJXp-mphantom {visibility: hidden}
+.MJXp-munderover {display: inline-table!important}
+.MJXp-over {display: inline-block!important; text-align: center}
+.MJXp-over > * {display: block!important}
+.MJXp-munderover > * {display: table-row!important}
+.MJXp-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXp-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXp-mtr {display: table-row!important}
+.MJXp-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXp-mtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-mlabeledtr {display: table-row!important}
+.MJXp-mlabeledtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mlabeledtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXp-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXp-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXp-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXp-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXp-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXp-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXp-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXp-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXp-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXp-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_PHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style><style type="text/css">.MathJax_Display {text-align: center; margin: 1em 0em; position: relative; display: block!important; text-indent: 0; max-width: none; max-height: none; min-width: 0; min-height: 0; width: 100%}
+.MathJax .merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MathJax .MJX-monospace {font-family: monospace}
+.MathJax .MJX-sans-serif {font-family: sans-serif}
+#MathJax_Tooltip {background-color: InfoBackground; color: InfoText; border: 1px solid black; box-shadow: 2px 2px 5px #AAAAAA; -webkit-box-shadow: 2px 2px 5px #AAAAAA; -moz-box-shadow: 2px 2px 5px #AAAAAA; -khtml-box-shadow: 2px 2px 5px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true'); padding: 3px 4px; z-index: 401; position: absolute; left: 0; top: 0; width: auto; height: auto; display: none}
+.MathJax {display: inline; font-style: normal; font-weight: normal; line-height: normal; font-size: 100%; font-size-adjust: none; text-indent: 0; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0; min-height: 0; border: 0; padding: 0; margin: 0}
+.MathJax:focus, body :focus .MathJax {display: inline-table}
+.MathJax.MathJax_FullWidth {text-align: center; display: table-cell!important; width: 10000em!important}
+.MathJax img, .MathJax nobr, .MathJax a {border: 0; padding: 0; margin: 0; max-width: none; max-height: none; min-width: 0; min-height: 0; vertical-align: 0; line-height: normal; text-decoration: none}
+img.MathJax_strut {border: 0!important; padding: 0!important; margin: 0!important; vertical-align: 0!important}
+.MathJax span {display: inline; position: static; border: 0; padding: 0; margin: 0; vertical-align: 0; line-height: normal; text-decoration: none}
+.MathJax nobr {white-space: nowrap!important}
+.MathJax img {display: inline!important; float: none!important}
+.MathJax * {transition: none; -webkit-transition: none; -moz-transition: none; -ms-transition: none; -o-transition: none}
+.MathJax_Processing {visibility: hidden; position: fixed; width: 0; height: 0; overflow: hidden}
+.MathJax_Processed {display: none!important}
+.MathJax_ExBox {display: block!important; overflow: hidden; width: 1px; height: 60ex; min-height: 0; max-height: none}
+.MathJax .MathJax_EmBox {display: block!important; overflow: hidden; width: 1px; height: 60em; min-height: 0; max-height: none}
+.MathJax_LineBox {display: table!important}
+.MathJax_LineBox span {display: table-cell!important; width: 10000em!important; min-width: 0; max-width: none; padding: 0; border: 0; margin: 0}
+.MathJax .MathJax_HitBox {cursor: text; background: white; opacity: 0; filter: alpha(opacity=0)}
+.MathJax .MathJax_HitBox * {filter: none; opacity: 1; background: transparent}
+#MathJax_Tooltip * {filter: none; opacity: 1; background: transparent}
+@font-face {font-family: MathJax_Main; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Main-Regular.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Main-Regular.otf?V=2.7.1') format('opentype')}
+@font-face {font-family: MathJax_Main; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Main-Bold.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Main-Bold.otf?V=2.7.1') format('opentype'); font-weight: bold}
+@font-face {font-family: MathJax_Main; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Main-Italic.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Main-Italic.otf?V=2.7.1') format('opentype'); font-style: italic}
+@font-face {font-family: MathJax_Math; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Math-Italic.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Math-Italic.otf?V=2.7.1') format('opentype'); font-style: italic}
+@font-face {font-family: MathJax_Caligraphic; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Regular.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Regular.otf?V=2.7.1') format('opentype')}
+@font-face {font-family: MathJax_Size1; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size1-Regular.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size1-Regular.otf?V=2.7.1') format('opentype')}
+@font-face {font-family: MathJax_Size2; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size2-Regular.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size2-Regular.otf?V=2.7.1') format('opentype')}
+@font-face {font-family: MathJax_Size3; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size3-Regular.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size3-Regular.otf?V=2.7.1') format('opentype')}
+@font-face {font-family: MathJax_Size4; src: url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff?V=2.7.1') format('woff'), url('https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf?V=2.7.1') format('opentype')}
+.MathJax .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style></head>
+
+<!-- tocinfo
+{'highest level': 2,
+ 'sections': [('Classification and Regression, from linear and logistic '
+               'regression to neural networks',
+               2,
+               None,
+               '___sec0'),
+              ('Part a): Write your own Stochastic Gradient Descent  code, '
+               'first step',
+               3,
+               None,
+               '___sec1'),
+              ('Part b): Writing your own Neural Network code',
+               3,
+               None,
+               '___sec2'),
+              ('Part c): Testing different activation functions',
+               3,
+               None,
+               '___sec3'),
+              ('Part d): Classification  analysis using neural networks',
+               3,
+               None,
+               '___sec4'),
+              ('Part e): Write your Logistic Regression code, final step',
+               3,
+               None,
+               '___sec5'),
+              ('Part f) Critical evaluation of the various algorithms',
+               3,
+               None,
+               '___sec6'),
+              ('Background literature', 2, None, '___sec7'),
+              ('Introduction to numerical projects', 2, None, '___sec8'),
+              ('Format for electronic delivery of report and programs',
+               2,
+               None,
+               '___sec9'),
+              ('Software and needed installations', 2, None, '___sec10')]}
+end of tocinfo -->
+
+<body><div style="visibility: hidden; overflow: hidden; position: absolute; top: 0px; height: 1px; width: auto; padding: 0px; border: 0px none; margin: 0px; text-align: left; text-indent: 0px; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal;"><div id="MathJax_Hidden"></div></div><div id="MathJax_Message" style="display: none;"></div>
+
+
+
+<script type="text/x-mathjax-config;executed=true">
+MathJax.Hub.Config({
+  TeX: {
+     equationNumbers: {  autoNumber: "AMS"  },
+     extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "color.js"]
+  }
+});
+</script>
+<script type="text/javascript" async="" src="Project%202%20on%20Machine%20Learning,%20deadline%20November%2013%20(Midnight)_files/MathJax.js">
+</script>
+
+
+
+    
+<!-- ------------------- main content ---------------------- -->
+
+
+
+<center><h1>Project 2 on Machine Learning, deadline November 13 (Midnight)</h1></center>  <!-- document title -->
+
+<p>
+<!-- author(s): <a href="http://www.uio.no/studier/emner/matnat/fys/FYS3155/index-eng.html" target="_blank">Data Analysis and Machine Learning FYS-STK3155/FYS4155</a> -->
+
+</p><center>
+<b><a href="http://www.uio.no/studier/emner/matnat/fys/FYS3155/index-eng.html" target="_blank">Data Analysis and Machine Learning FYS-STK3155/FYS4155</a></b> 
+</center>
+
+<p>
+<!-- institution -->
+
+</p><center><b>Department of Physics, University of Oslo, Norway</b></center>
+<br>
+<p>
+</p><center><h4>Nov 4, 2020</h4></center> <!-- date -->
+<br>
+
+<h2 id="___sec0">Classification and Regression, from linear and logistic regression to neural networks  </h2>
+
+<p>
+The main aim of this project is to study both classification and
+regression problems by developing our own feed-forward neural network 
+(FFNN) code. We can reuse the regression algorithms studied
+in project 1. We will also include logistic regression for 
+classification
+problems and write our own FFNN code for studying
+both regression and classification problems.  The codes developed in
+project 1, including bootstrap and/or cross-validation as well as the
+computation of the mean-squared error and/or the <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-1-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;R&lt;/mi&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-1" style="width: 1.637em; display: inline-block;"><span style="display: inline-block; position: relative; width: 1.25em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.384em, 1001.2em, 2.377em, -1000em); top: -2.212em; left: 0em;"><span class="mrow" id="MathJax-Span-2"><span class="mi" id="MathJax-Span-3" style="font-family: MathJax_Math; font-style: italic;">R</span><span class="mn" id="MathJax-Span-4" style="font-family: MathJax_Main;">2</span></span><span style="display: inline-block; width: 0px; height: 2.212em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.09em; border-left: 0px solid; width: 0px; height: 1.04em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>R</mi><mn>2</mn></math></span></span><script type="math/tex" id="MathJax-Element-1"> R2 </script> or the accuracy score (classification problems) functions can
+also be utilized in the present analysis.
+
+</p><p>
+The data sets that we propose here are (the default sets)
+
+</p><ul>
+<li> Regression (fitting a continuous function). In this part you will 
+need to bring back your results from project 1 and compare these with 
+what you get from your Neural Network code to be developed here. The 
+data sets could be
+
+<ol type="a">
+ <li> Either the Franke function or the terrain data from project 1, or data sets your propose.</li>
+</ol>
+
+</li><li> Classification. Here you will also need to develop a Logistic 
+regression code that you will use to compare with the Neural Network 
+code. The data set we propose are the so-called <a href="https://en.wikipedia.org/wiki/MNIST_database" target="_blank">MNIST</a>
+ data set of images representing hand-written numbers from zero to nine.
+ These are discussed intensively in the lecture notes on neural 
+networks, see for example the slides from <a href="https://compphysics.github.io/MachineLearning/doc/pub/week41/html/week41.html" target="_blank">week 41</a></li>
+</ul>
+
+However, if you would like to study other data sets, feel free to
+propose other sets. What we listed here are mere suggestions from our
+side. If you opt for another data set, consider using a set which
+has been studied in the scientific literature. This makes it easier
+for you to compare and analyze your results. Comparing with existing 
+results from the scientific literature  is also an essential
+element of the scientific discussion.
+
+<p>
+In particular, when developing your own Neural Network and Logistic 
+Regression codes for classification problems, the so-called Wisconsin 
+Cancer data (which is a binary problem, benign or malignant tumors) may 
+be studied. You can find more information about this at the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_breast_cancer.html" target="_blank">Scikit-Learn site</a> or at the <a href="https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+(original)" target="_blank">University of California at Irvine</a>.
+
+</p><p>
+We will start with a regression problem and we will reuse our codes from
+ project 1 starting with writing our own Stochastic Gradient Descent 
+(SGD) code.
+
+</p><h3 id="___sec1">Part a): Write your own Stochastic Gradient Descent  code, first step </h3>
+
+<p>
+In order to get started, we will now replace in our standard ordinary
+least squares (OLS) and Ridge regression codes (from project 1) the matrix inversion
+algorithm with our own SGD code. You can choose whether you want to
+add the momentum SGD optionality or other SGD variants such as RMSprop
+or ADAgrad. The lecture notes from <a href="https://compphysics.github.io/MachineLearning/doc/pub/week40/html/week40.html" target="_blank">week 40 contain more
+details</a>
+
+</p><p>
+Perform an analysis of the results for OLS and Ridge regression as
+function of the chosen learning rates, the number of mini-batches and
+epochs as well as algorithm for scaling the learning rate. You can
+also compare your own results with those that can be obtained using
+for example <b>Scikit-Learn</b>'s various SGD options.  Discuss your
+results. For Ridge regression you need now to study the results as functions of  the hyper-parameter <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-2-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;&amp;#x03BB;&lt;/mi&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-5" style="width: 0.772em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.577em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.133em, 1000.55em, 2.127em, -1000em); top: -1.971em; left: 0em;"><span class="mrow" id="MathJax-Span-6"><span class="mi" id="MathJax-Span-7" style="font-family: MathJax_Math; font-style: italic;">λ</span></span><span style="display: inline-block; width: 0px; height: 1.971em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.078em; border-left: 0px solid; width: 0px; height: 1.043em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>λ</mi></math></span></span><script type="math/tex" id="MathJax-Element-2"> \lambda </script> and 
+the learning rate <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-3-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;&amp;#x03B3;&lt;/mi&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-8" style="width: 0.724em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.529em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.386em, 1000.53em, 2.331em, -1000em); top: -1.971em; left: 0em;"><span class="mrow" id="MathJax-Span-9"><span class="mi" id="MathJax-Span-10" style="font-family: MathJax_Math; font-style: italic;">γ<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.025em;"></span></span></span><span style="display: inline-block; width: 0px; height: 1.971em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.343em; border-left: 0px solid; width: 0px; height: 0.979em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>γ</mi></math></span></span><script type="math/tex" id="MathJax-Element-3"> \gamma </script>.  Discuss your results.
+
+</p><p>
+You will need your SGD code for the setup of the Neural Network and Logistic Regression codes.
+
+</p><h3 id="___sec2">Part b): Writing your own Neural Network code  </h3>
+
+<p>
+Your aim now, and this is the central part of this project, is to
+write your own Feed Forward Neural Network  code implementing the back
+propagation algorithm discussed in the lecture slides from <a href="https://compphysics.github.io/MachineLearning/doc/pub/week41/html/week41.html" target="_blank">week 41</a>.
+
+</p><p>
+We will focus on a regression problem first and study either the
+Franke function or terrain data (or both or other data sets) from
+project 1.  Discuss again your choice of cost function.
+
+</p><p>
+Write an FFNN code for regression with a flexible number of hidden
+layers and nodes using the Sigmoid function as activation function for
+the hidden layers. Initialize the weights using a normal
+distribution. How would you initialize the biases? And which
+activation function would you select for the final output layer?
+
+</p><p>
+Train your network and compare the results with those from your OLS and Ridge Regression codes from project 1. 
+You should test your results against a similar code using <b>Scikit-Learn</b> (see the examples in the above lecture notes from week 41) or <b>tensorflow/keras</b>.
+
+</p><p>
+Comment your results and give a critical discussion of the results
+obtained with the Linear  Regression code and your own Neural Network
+code.  Compare the results with those from project 1.
+Make an analysis of the regularization parameters and the learning rates employed to find the optimal MSE and <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-4-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;R&lt;/mi&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-11" style="width: 1.637em; display: inline-block;"><span style="display: inline-block; position: relative; width: 1.25em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.384em, 1001.2em, 2.377em, -1000em); top: -2.212em; left: 0em;"><span class="mrow" id="MathJax-Span-12"><span class="mi" id="MathJax-Span-13" style="font-family: MathJax_Math; font-style: italic;">R</span><span class="mn" id="MathJax-Span-14" style="font-family: MathJax_Main;">2</span></span><span style="display: inline-block; width: 0px; height: 2.212em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.09em; border-left: 0px solid; width: 0px; height: 1.04em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>R</mi><mn>2</mn></math></span></span><script type="math/tex" id="MathJax-Element-4"> R2 </script> scores.
+
+</p><p>
+A useful reference on the back progagation algorithm is <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Nielsen's
+book</a>. It is an excellent
+read.
+
+</p><h3 id="___sec3">Part c): Testing different activation functions </h3>
+
+<p>
+You should now also test different activation functions for the hidden 
+layers. Try out the Sigmoid, the RELU and the Leaky RELU functions and 
+discuss your results. You may also study the way you initialize your 
+weights and biases.
+
+</p><h3 id="___sec4">Part d): Classification  analysis using neural networks  </h3>
+
+<p>
+With a well-written code it should now be easy to change the
+activation function for the output layer.
+
+</p><p>
+Here we will change the cost function for our neural network code
+developed in parts b) and c) in order to perform a classification analysis.
+
+</p><p>
+We will here study the MNIST data set of hand-written numbers as
+discussed in the lecture notes from <a href="https://compphysics.github.io/MachineLearning/doc/pub/week41/html/week41.html" target="_blank">week
+41</a>. Use
+the <b>Softmax</b> function as activation function. Your code should
+however also be able to use a binary activation function as well.
+
+</p><p>
+To measure the performance of our classification problem we use the
+so-called <em>accuracy</em> score.  The accuracy is as you would expect just
+the number of correctly guessed targets <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-5-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-15" style="width: 0.916em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.673em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(0.239em, 1000.67em, 1.312em, -1000em); top: -1.01em; left: 0em;"><span class="mrow" id="MathJax-Span-16"><span class="msubsup" id="MathJax-Span-17"><span style="display: inline-block; position: relative; width: 0.68em; height: 0px;"><span style="position: absolute; clip: rect(3.22em, 1000.33em, 4.146em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-18" style="font-family: MathJax_Math; font-style: italic;">t</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.361em;"><span class="mi" id="MathJax-Span-19" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 1.01em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.268em; border-left: 0px solid; width: 0px; height: 1.144em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>t</mi><mi>i</mi></msub></math></span></span><script type="math/tex" id="MathJax-Element-5"> t_i </script> divided by the total
+number of targets, that is 
+
+<span class="MathJax_Preview" style="color: inherit; display: none;"></span><div class="MathJax_Display" style="text-align: center;"><span class="MathJax" id="MathJax-Element-6-Frame" tabindex="0" style="text-align: center; position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;mtext&gt;Accuracy&lt;/mtext&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;munderover&gt;&lt;mo&gt;&amp;#x2211;&lt;/mo&gt;&lt;mrow class=&quot;MJX-TeXAtom-ORD&quot;&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/munderover&gt;&lt;mi&gt;I&lt;/mi&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/mrow&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/mfrac&gt;&lt;mo&gt;,&lt;/mo&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-20" style="width: 16.397em; display: inline-block;"><span style="display: inline-block; position: relative; width: 12.596em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(0.524em, 1012.53em, 3.053em, -1000em); top: -2.212em; left: 0em;"><span class="mrow" id="MathJax-Span-21"><span class="mtext" id="MathJax-Span-22" style="font-family: MathJax_Main;">Accuracy</span><span class="mo" id="MathJax-Span-23" style="font-family: MathJax_Main; padding-left: 0.278em;">=</span><span class="mfrac" id="MathJax-Span-24" style="padding-left: 0.278em;"><span style="display: inline-block; position: relative; width: 6.671em; height: 0px; margin-right: 0.12em; margin-left: 0.12em;"><span style="position: absolute; clip: rect(3.057em, 1006.46em, 4.428em, -1000em); top: -4.744em; left: 50%; margin-left: -3.275em;"><span class="mrow" id="MathJax-Span-25"><span class="munderover" id="MathJax-Span-26"><span style="display: inline-block; position: relative; width: 2.279em; height: 0px;"><span style="position: absolute; clip: rect(3.096em, 1001em, 4.385em, -1000em); top: -3.99em; left: 0em;"><span class="mo" id="MathJax-Span-27" style="font-family: MathJax_Size1; vertical-align: 0em;">∑</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; clip: rect(3.534em, 1000.5em, 4.142em, -1000em); top: -4.467em; left: 1.056em;"><span class="mi" id="MathJax-Span-28" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">n</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; clip: rect(3.375em, 1001.22em, 4.142em, -1000em); top: -3.705em; left: 1.056em;"><span class="texatom" id="MathJax-Span-29"><span class="mrow" id="MathJax-Span-30"><span class="mi" id="MathJax-Span-31" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span class="mo" id="MathJax-Span-32" style="font-size: 70.7%; font-family: MathJax_Main;">=</span><span class="mn" id="MathJax-Span-33" style="font-size: 70.7%; font-family: MathJax_Main;">1</span></span></span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span><span class="mi" id="MathJax-Span-34" style="font-family: MathJax_Math; font-style: italic; padding-left: 0.167em;">I<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.064em;"></span></span><span class="mo" id="MathJax-Span-35" style="font-family: MathJax_Main;">(</span><span class="msubsup" id="MathJax-Span-36"><span style="display: inline-block; position: relative; width: 0.68em; height: 0px;"><span style="position: absolute; clip: rect(3.22em, 1000.33em, 4.146em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-37" style="font-family: MathJax_Math; font-style: italic;">t</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.361em;"><span class="mi" id="MathJax-Span-38" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span><span class="mo" id="MathJax-Span-39" style="font-family: MathJax_Main; padding-left: 0.278em;">=</span><span class="msubsup" id="MathJax-Span-40" style="padding-left: 0.278em;"><span style="display: inline-block; position: relative; width: 0.809em; height: 0px;"><span style="position: absolute; clip: rect(3.404em, 1000.5em, 4.34em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-41" style="font-family: MathJax_Math; font-style: italic;">y<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.006em;"></span></span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.49em;"><span class="mi" id="MathJax-Span-42" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span><span class="mo" id="MathJax-Span-43" style="font-family: MathJax_Main;">)</span></span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; clip: rect(3.404em, 1000.58em, 4.146em, -1000em); top: -3.304em; left: 50%; margin-left: -0.3em;"><span class="mi" id="MathJax-Span-44" style="font-family: MathJax_Math; font-style: italic;">n</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; clip: rect(0.853em, 1006.67em, 1.202em, -1000em); top: -1.278em; left: 0em;"><span style="display: inline-block; overflow: hidden; vertical-align: 0em; border-top: 1.3px solid; width: 6.671em; height: 0px;"></span><span style="display: inline-block; width: 0px; height: 1.058em;"></span></span></span></span><span class="mo" id="MathJax-Span-45" style="font-family: MathJax_Main;">,</span></span><span style="display: inline-block; width: 0px; height: 2.212em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.969em; border-left: 0px solid; width: 0px; height: 3.037em;"></span></span></nobr><span class="MJX_Assistive_MathML MJX_Assistive_MathML_Block" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mtext>Accuracy</mtext><mo>=</mo><mfrac><mrow><munderover><mo>∑</mo><mrow class="MJX-TeXAtom-ORD"><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>I</mi><mo stretchy="false">(</mo><msub><mi>t</mi><mi>i</mi></msub><mo>=</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow><mi>n</mi></mfrac><mo>,</mo></math></span></span></div><script type="math/tex; mode=display" id="MathJax-Element-6"> 
+\text{Accuracy} = \frac{\sum_{i=1}^n I(t_i = y_i)}{n} ,
+</script>
+
+</p><p>
+where <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-7-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;I&lt;/mi&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-46" style="width: 0.627em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.481em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.144em, 1000.48em, 2.115em, -1000em); top: -1.971em; left: 0em;"><span class="mrow" id="MathJax-Span-47"><span class="mi" id="MathJax-Span-48" style="font-family: MathJax_Math; font-style: italic;">I<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.064em;"></span></span></span><span style="display: inline-block; width: 0px; height: 1.971em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.063em; border-left: 0px solid; width: 0px; height: 1.013em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>I</mi></math></span></span><script type="math/tex" id="MathJax-Element-7"> I </script> is the indicator function, <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-8-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-49" style="width: 0.627em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.481em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.401em, 1000.41em, 2.356em, -1000em); top: -2.212em; left: 0em;"><span class="mrow" id="MathJax-Span-50"><span class="mn" id="MathJax-Span-51" style="font-family: MathJax_Main;">1</span></span><span style="display: inline-block; width: 0px; height: 2.212em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.063em; border-left: 0px solid; width: 0px; height: 0.991em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mn>1</mn></math></span></span><script type="math/tex" id="MathJax-Element-8"> 1 </script> if <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-9-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-52" style="width: 3.704em; display: inline-block;"><span style="display: inline-block; position: relative; width: 2.837em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.441em, 1002.84em, 2.561em, -1000em); top: -2.212em; left: 0em;"><span class="mrow" id="MathJax-Span-53"><span class="msubsup" id="MathJax-Span-54"><span style="display: inline-block; position: relative; width: 0.68em; height: 0px;"><span style="position: absolute; clip: rect(3.22em, 1000.33em, 4.146em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-55" style="font-family: MathJax_Math; font-style: italic;">t</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.361em;"><span class="mi" id="MathJax-Span-56" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span><span class="mo" id="MathJax-Span-57" style="font-family: MathJax_Main; padding-left: 0.278em;">=</span><span class="msubsup" id="MathJax-Span-58" style="padding-left: 0.278em;"><span style="display: inline-block; position: relative; width: 0.809em; height: 0px;"><span style="position: absolute; clip: rect(3.404em, 1000.5em, 4.34em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-59" style="font-family: MathJax_Math; font-style: italic;">y<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.006em;"></span></span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.49em;"><span class="mi" id="MathJax-Span-60" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.212em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.329em; border-left: 0px solid; width: 0px; height: 1.205em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>t</mi><mi>i</mi></msub><mo>=</mo><msub><mi>y</mi><mi>i</mi></msub></math></span></span><script type="math/tex" id="MathJax-Element-9"> t_i = y_i </script> and <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-10-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mn&gt;0&lt;/mn&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-61" style="width: 0.627em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.481em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.401em, 1000.44em, 2.378em, -1000em); top: -2.212em; left: 0em;"><span class="mrow" id="MathJax-Span-62"><span class="mn" id="MathJax-Span-63" style="font-family: MathJax_Main;">0</span></span><span style="display: inline-block; width: 0px; height: 2.212em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.091em; border-left: 0px solid; width: 0px; height: 1.019em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mn>0</mn></math></span></span><script type="math/tex" id="MathJax-Element-10"> 0 </script>
+otherwise if we have a binary classification problem. Here <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-11-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-64" style="width: 0.916em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.673em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(0.239em, 1000.67em, 1.312em, -1000em); top: -1.01em; left: 0em;"><span class="mrow" id="MathJax-Span-65"><span class="msubsup" id="MathJax-Span-66"><span style="display: inline-block; position: relative; width: 0.68em; height: 0px;"><span style="position: absolute; clip: rect(3.22em, 1000.33em, 4.146em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-67" style="font-family: MathJax_Math; font-style: italic;">t</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.361em;"><span class="mi" id="MathJax-Span-68" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 1.01em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.268em; border-left: 0px solid; width: 0px; height: 1.144em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>t</mi><mi>i</mi></msub></math></span></span><script type="math/tex" id="MathJax-Element-11"> t_i </script>
+represents the target and <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-12-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-69" style="width: 1.06em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.817em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(0.423em, 1000.82em, 1.359em, -1000em); top: -1.01em; left: 0em;"><span class="mrow" id="MathJax-Span-70"><span class="msubsup" id="MathJax-Span-71"><span style="display: inline-block; position: relative; width: 0.809em; height: 0px;"><span style="position: absolute; clip: rect(3.404em, 1000.5em, 4.34em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-72" style="font-family: MathJax_Math; font-style: italic;">y<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.006em;"></span></span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.49em;"><span class="mi" id="MathJax-Span-73" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 1.01em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.329em; border-left: 0px solid; width: 0px; height: 0.966em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>y</mi><mi>i</mi></msub></math></span></span><script type="math/tex" id="MathJax-Element-12"> y_i </script> the outputs of your FFNN code and <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-13-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;n&lt;/mi&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-74" style="width: 0.772em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.577em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.385em, 1000.56em, 2.126em, -1000em); top: -1.971em; left: 0em;"><span class="mrow" id="MathJax-Span-75"><span class="mi" id="MathJax-Span-76" style="font-family: MathJax_Math; font-style: italic;">n</span></span><span style="display: inline-block; width: 0px; height: 1.971em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.077em; border-left: 0px solid; width: 0px; height: 0.714em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>n</mi></math></span></span><script type="math/tex" id="MathJax-Element-13"> n </script> is simply the number of targets <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-14-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;t&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-77" style="width: 0.916em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.673em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(0.239em, 1000.67em, 1.312em, -1000em); top: -1.01em; left: 0em;"><span class="mrow" id="MathJax-Span-78"><span class="msubsup" id="MathJax-Span-79"><span style="display: inline-block; position: relative; width: 0.68em; height: 0px;"><span style="position: absolute; clip: rect(3.22em, 1000.33em, 4.146em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-80" style="font-family: MathJax_Math; font-style: italic;">t</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.361em;"><span class="mi" id="MathJax-Span-81" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic;">i</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 1.01em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.268em; border-left: 0px solid; width: 0px; height: 1.144em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>t</mi><mi>i</mi></msub></math></span></span><script type="math/tex" id="MathJax-Element-14"> t_i </script>.
+
+</p><p>
+Discuss your results and give a critical analysis of the various 
+parameters, including hyper-parameters like the learning rates and the 
+regularization parameter <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-15-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;&amp;#x03BB;&lt;/mi&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-82" style="width: 0.772em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.577em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.133em, 1000.55em, 2.127em, -1000em); top: -1.971em; left: 0em;"><span class="mrow" id="MathJax-Span-83"><span class="mi" id="MathJax-Span-84" style="font-family: MathJax_Math; font-style: italic;">λ</span></span><span style="display: inline-block; width: 0px; height: 1.971em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.078em; border-left: 0px solid; width: 0px; height: 1.043em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>λ</mi></math></span></span><script type="math/tex" id="MathJax-Element-15"> \lambda </script> (as you did in Ridge Regression), various activation functions, number of hidden layers and nodes and activation functions.
+
+</p><p>
+As stated in the introduction, it can also be useful to study other
+datasets. In particular, the so-called Wisconsin Cancer
+data (which is a binary problem, benign or malignant tumors) may be
+studied. You find more information about this at the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_breast_cancer.html" target="_blank">Scikit-Learn
+site</a> or at the <a href="https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+(original)" target="_blank">University of California
+at Irvine</a>.
+
+</p><p>
+Again, we strongly recommend that you compare your own neural Network
+code for classification and pertinent results against a similar code using <b>Scikit-Learn</b>  or <b>tensorflow/keras</b> or <b>pytorch</b>.
+
+</p><h3 id="___sec5">Part e): Write your Logistic Regression code, final step </h3>
+
+<p>
+Finally, we want to compare the FFNN code we have developed with
+Logistic regression, that is we wish to compare our neural network
+classification results with the results we can obtain with another
+method.
+
+</p><p>
+Define your cost function and the design matrix before you start writing
+ your code.
+Write thereafter a Logistic regression code using your SGD algorithm. 
+Study the results as functions of the chosen learning rates.
+Add also an <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-16-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;msub&gt;&lt;mi&gt;l&lt;/mi&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/msub&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-85" style="width: 0.964em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.721em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(0.171em, 1000.72em, 1.304em, -1000em); top: -1.01em; left: 0em;"><span class="mrow" id="MathJax-Span-86"><span class="msubsup" id="MathJax-Span-87"><span style="display: inline-block; position: relative; width: 0.727em; height: 0px;"><span style="position: absolute; clip: rect(3.152em, 1000.27em, 4.146em, -1000em); top: -3.99em; left: 0em;"><span class="mi" id="MathJax-Span-88" style="font-family: MathJax_Math; font-style: italic;">l</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span><span style="position: absolute; top: -3.84em; left: 0.298em;"><span class="mn" id="MathJax-Span-89" style="font-size: 70.7%; font-family: MathJax_Main;">2</span><span style="display: inline-block; width: 0px; height: 3.99em;"></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 1.01em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.258em; border-left: 0px solid; width: 0px; height: 1.222em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>l</mi><mn>2</mn></msub></math></span></span><script type="math/tex" id="MathJax-Element-16"> l_2 </script> regularization parameter <span class="MathJax_Preview" style="color: inherit; display: none;"></span><span class="MathJax" id="MathJax-Element-17-Frame" tabindex="0" style="position: relative;" data-mathml="&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;mi&gt;&amp;#x03BB;&lt;/mi&gt;&lt;/math&gt;" role="presentation"><nobr aria-hidden="true"><span class="math" id="MathJax-Span-90" style="width: 0.772em; display: inline-block;"><span style="display: inline-block; position: relative; width: 0.577em; height: 0px; font-size: 130%;"><span style="position: absolute; clip: rect(1.133em, 1000.55em, 2.127em, -1000em); top: -1.971em; left: 0em;"><span class="mrow" id="MathJax-Span-91"><span class="mi" id="MathJax-Span-92" style="font-family: MathJax_Math; font-style: italic;">λ</span></span><span style="display: inline-block; width: 0px; height: 1.971em;"></span></span></span><span style="display: inline-block; overflow: hidden; vertical-align: -0.078em; border-left: 0px solid; width: 0px; height: 1.043em;"></span></span></nobr><span class="MJX_Assistive_MathML" role="presentation"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>λ</mi></math></span></span><script type="math/tex" id="MathJax-Element-17"> \lambda </script>. Compare your results with those from your FFNN code as well as those obtained using <b>Scikit-Learn</b>'s logistic regression functionality.
+
+</p><p>
+The weblink  here <a href="https://medium.com/ai-in-plain-english/comparison-between-logistic-regression-and-neural-networks-in-classifying-digits-dc5e85cd93c3" target="_blank"><tt>https://medium.com/ai-in-plain-english/comparison-between-logistic-regression-and-neural-networks-in-classifying-digits-dc5e85cd93c3</tt></a>compares logistic regression and FFNN using the MNIST data set. You may find several useful hints and ideas from this article.
+
+</p><h3 id="___sec6">Part f) Critical evaluation of the various algorithms </h3>
+
+<p>
+After all these glorious calculations, you should now summarize the
+various algorithms and come with a critical evaluation of their pros
+and cons. Which algorithm works best for the regression case and which
+is best for the classification case. These codes can also be part of
+your final project 3, but now applied to other data sets.
+
+</p><h2 id="___sec7">Background literature </h2>
+
+<ol>
+<li> The text of Michael Nielsen is highly recommended, see <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Nielsen's book</a>. It is an excellent read.</li>
+<li> The textbook of <a href="https://www.springer.com/gp/book/9780387848570" target="_blank">Trevor Hastie, Robert Tibshirani, Jerome H. Friedman, The Elements of Statistical Learning, Springer</a>, chapters 3 and 7 are the most relevant ones for the analysis here.</li> 
+<li> <a href="https://arxiv.org/abs/1803.08823" target="_blank">Mehta et al, arXiv 1803.08823</a>, <em>A high-bias, low-variance introduction to Machine Learning for physicists</em>, ArXiv:1803.08823.</li>
+</ol>
+
+<h2 id="___sec8">Introduction to numerical projects </h2>
+
+<p>
+Here follows a brief recipe and recommendation on how to write a report for each
+project.
+
+</p><ul>
+  <li> Give a short description of the nature of the problem and the eventual  numerical methods you have used.</li>
+  <li> Describe the algorithm you have used and/or developed. Here you 
+may find it convenient to use pseudocoding. In many cases you can 
+describe the algorithm in the program itself.</li>
+  <li> Include the source code of your program. Comment your program properly.</li>
+  <li> If possible, try to find analytic solutions, or known limits in order to test your program when developing the code.</li>
+  <li> Include your results either in figure form or in a table. 
+Remember to        label your results. All tables and figures should 
+have relevant captions        and labels on the axes.</li>
+  <li> Try to evaluate the reliabilty and numerical stability/precision 
+of your results. If possible, include a qualitative and/or quantitative 
+discussion of the numerical stability, eventual loss of precision etc.</li>
+  <li> Try to give an interpretation of you results in your answers to  the problems.</li>
+  <li> Critique: if possible include your comments and reflections about
+ the  exercise, whether you felt you learnt something, ideas for 
+improvements and  other thoughts you've made when solving the exercise. 
+We wish to keep this course at the interactive level and your comments 
+can help us improve it.</li>
+  <li> Try to establish a practice where you log your work at the  
+computerlab. You may find such a logbook very handy at later stages in 
+your work, especially when you don't properly remember  what a previous 
+test version  of your program did. Here you could also record  the time 
+spent on solving the exercise, various algorithms you may have tested or
+ other topics which you feel worthy of mentioning.</li>
+</ul>
+
+<h2 id="___sec9">Format for electronic delivery of report and programs </h2>
+
+<p>
+The preferred format for the report is a PDF file. You can also use DOC 
+or postscript formats or as an ipython notebook file.  As programming 
+language we prefer that you choose between C/C++, Fortran2008 or Python.
+ The following prescription should be followed when preparing the 
+report:
+
+</p><ul>
+  <li> Use Canvas to hand in your projects, log in  at  <a href="https://www.uio.no/english/services/it/education/canvas/" target="_blank"><tt>https://www.uio.no/english/services/it/education/canvas/</tt></a> with your normal UiO username and password.</li>
+  <li> Upload <b>only</b> the report file or the link to your 
+GitHub/GitLab or similar typo of  repos!  For the source code file(s) 
+you have developed please provide us with your link to your 
+GitHub/GitLab or similar  domain.  The report file should include all of
+ your discussions and a list of the codes you have developed.  Do not 
+include library files which are available at the course homepage, unless
+ you have made specific changes to them.</li>
+  <li> In your GitHub/GitLab or similar repository, please include a 
+folder which contains selected results. These can be in the form of 
+output from your code for a selected set of runs and input parameters.</li>
+</ul>
+
+Finally, 
+we encourage you to collaborate. Optimal working groups consist of 
+2-3 students. You can then hand in a common report.
+
+<h2 id="___sec10">Software and needed installations </h2>
+
+<p>
+If you have Python installed (we recommend Python3) and you feel pretty familiar with installing different packages, 
+we recommend that you install the following Python packages via <b>pip</b> as
+
+</p><ol>
+<li> pip install numpy scipy matplotlib ipython scikit-learn tensorflow sympy pandas pillow</li>
+</ol>
+
+For Python3, replace <b>pip</b> with <b>pip3</b>.
+
+<p>
+See below for a discussion of <b>tensorflow</b> and <b>scikit-learn</b>.
+
+</p><p>
+For OSX users we recommend also, after having installed Xcode, to install <b>brew</b>. Brew allows 
+for a seamless installation of additional software via for example
+
+</p><ol>
+<li> brew install python3</li>
+</ol>
+
+For Linux users, with its variety of distributions like for example the widely popular Ubuntu distribution
+you can use <b>pip</b> as well and simply install Python as 
+
+<ol>
+<li> sudo apt-get install python3  (or python for python2.7)</li>
+</ol>
+
+etc etc.
+
+<p>
+If you don't want to install various Python packages with their 
+dependencies separately, we recommend two widely used distrubutions 
+which set up  all relevant dependencies for Python, namely
+
+</p><ol>
+<li> <a href="https://docs.anaconda.com/" target="_blank">Anaconda</a> 
+Anaconda is an open source distribution of the Python and R programming 
+languages for large-scale data processing, predictive analytics, and 
+scientific computing, that aims to simplify package management and 
+deployment. Package versions are managed by the package management 
+system <b>conda</b></li>
+<li> <a href="https://www.enthought.com/product/canopy/" target="_blank">Enthought canopy</a>
+  is a Python distribution for scientific and analytic computing 
+distribution and analysis environment, available for free and under a 
+commercial license.</li>
+</ol>
+
+Popular software packages written in Python for ML are
+
+<ul>
+<li> <a href="http://scikit-learn.org/stable/" target="_blank">Scikit-learn</a>,</li> 
+<li> <a href="https://www.tensorflow.org/" target="_blank">Tensorflow</a>,</li>
+<li> <a href="http://pytorch.org/" target="_blank">PyTorch</a> and</li> 
+<li> <a href="https://keras.io/" target="_blank">Keras</a>.</li>
+</ul>
+
+These are all freely available at their respective GitHub sites. They 
+encompass communities of developers in the thousands or more. And the number
+of code developers and contributors keeps increasing.
+
+<p>
+
+<!-- ------------------- end of main content --------------- -->
+
+
+</p><center style="font-size:80%">
+<!-- copyright --> © 1999-2020, "Data Analysis and Machine Learning 
+FYS-STK3155/FYS4155":"http://www.uio.no/studier/emner/matnat/fys/FYS3155/index-eng.html".
+ Released under CC Attribution-NonCommercial 4.0 license
+</center>
+
+
+
+
+    
+
+<div style="position: absolute; width: 0px; height: 0px; overflow: hidden; padding: 0px; border: 0px none; margin: 0px;"><div id="MathJax_Font_Test" style="position: absolute; visibility: hidden; top: 0px; left: 0px; width: auto; padding: 0px; border: 0px none; margin: 0px; white-space: nowrap; text-align: left; text-indent: 0px; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; font-size: 40px; font-weight: normal; font-style: normal; font-size-adjust: none; font-family: MathJax_Size1, sans-serif;"></div></div></body></html>
